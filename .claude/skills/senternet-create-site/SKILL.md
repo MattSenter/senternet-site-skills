@@ -16,6 +16,25 @@ Before asking anything, check whether the user provided a path to an existing di
 - **Existing directory** — run in **upfit mode**: navigate to that directory and detect what's already implemented before each step. Skip steps that are complete, patch steps that are partial.
 - **No directory provided** — run in **create mode**: ask the intake questions below and build from scratch. If the user does not have a design zip, directory, or HTML export, default to a barebones Hello World site using the requested project and directory names.
 
+## Upfit Feature Inventory
+
+In upfit mode, surface a visible feature inventory before the optional phases so the user can see what is already enabled and what is still available to add.
+
+- For each optional capability, detect whether the repo already has it.
+- Report each one as either `enabled` or `available`.
+- If one or more optional capabilities are `available`, present them to the user as a single enablement menu instead of separate yes/no prompts.
+- Only offer options for capabilities that are not already enabled.
+
+Optional capabilities to inventory in upfit mode:
+
+- Transactional email via Resend
+- Reddit pixel for ad campaigns
+- Spanish `/es/` multilingual support
+- Ad landing pages for paid campaigns
+- SEO blog
+- Competitor comparison / alternative pages
+- reCAPTCHA Enterprise protection for forms
+
 ---
 
 ## Intake Questions
@@ -23,14 +42,14 @@ Before asking anything, check whether the user provided a path to an existing di
 **If creating new**, ask:
 1. **Site name** (e.g. `myapp-site`) — used as the directory name
 2. **App/product name** (e.g. `MyApp`) — used in copy, meta tags, schema.org
-3. **Domain** (e.g. `www.myapp.com`) — used in canonical URLs, sitemap, IndexNow
+3. **Domain** (e.g. `myapp.com`) — used in canonical URLs, sitemap, IndexNow, and Firebase Hosting domain setup; default canonical host is `www.myapp.com` unless they explicitly want apex canonical
 4. **Design export** — path to the zip file, directory, or HTML file exported from Claude Design (or another design tool). If they do not have one, skip this input and create a barebones Hello World site instead.
 5. **App Store URL** (if iOS app, e.g. `https://apps.apple.com/app/...`) — used in CTA links
 6. **Twitter/X handle** (e.g. `@MyAppHQ`) — used in Twitter Card meta tags
 7. **Multilingual?** (yes/no) — whether to add Spanish (`/es/`) support
 
 **If upfitting an existing directory**, ask only what's missing or cannot be detected:
-- Read `package.json`, `firebase.json`, `.firebaserc`, `index.html`, and `.env.production` to infer app name, domain, and GA ID before asking.
+- Read `package.json`, `firebase.json`, `.firebaserc`, `.firebase-domain.json`, `index.html`, and `.env.production` to infer app name, domain, canonical host, and GA ID before asking.
 - Only ask for values that can't be found in the project files.
 
 ---
@@ -55,6 +74,7 @@ Before executing each step, run the detection check listed for that step:
 Execute `/senternet-site-github-setup` for any missing pieces.
 
 Ask: "Do you want to set up a git repo and GitHub remote now?" only if `.git/` does not exist. If it does, skip the question entirely.
+In upfit mode, include GitHub setup in the same feature inventory so the user can see whether the repo and remote are already enabled or still available to add.
 
 ---
 
@@ -108,13 +128,15 @@ This step is required for every site, including brand-new creates. Never skip it
 **Detection:**
 - `firebase.json` exists → check for caching headers, security headers, `cleanUrls`; patch missing config keys
 - `.firebaserc` exists → check for dev/prod project entries; add missing entries
+- `.firebase-domain.json` exists with `status: connected` and the expected apex/canonical pair → skip the custom domain handoff
 - `deploy:prod` script in `package.json` → skip script addition
 
-Execute `/senternet-site-firebase` for any missing pieces.
+Execute `/senternet-site-firebase` for any missing pieces, including the custom-domain handoff when `.firebase-domain.json` is absent or still pending.
 
-After this step, verify these three files exist and are correct before moving on:
+After this step, verify these files exist and are correct before moving on:
 - `firebase.json`
 - `.firebaserc`
+- `.firebase-domain.json` if the canonical domain was connected
 - `package.json` with `deploy:prod` wired to Firebase deploy
 
 ---
@@ -157,7 +179,7 @@ Execute `/senternet-site-indexnow` for any missing pieces.
 
 ---
 
-## Phase 3: Analytics & Tracking
+## Phase 3: Analytics, Email & Tracking
 
 ### Step 8: Google Analytics
 
@@ -168,20 +190,28 @@ Execute `/senternet-site-indexnow` for any missing pieces.
 
 Execute `/senternet-site-google-analytics` for any missing pieces.
 
-### Step 9: Reddit Pixel *(optional — only if running Reddit ads)*
+### Step 9: Transactional Email via Resend *(optional — for forms, notifications, or onboarding)*
+
+**Detection:**
+- `functions/src/index.ts` contains `RESEND_API_KEY` or `sendResendEmail` → skip
+- `firebase.json` has a `functions` block and root `package.json` deploy script already includes `hosting,functions` → skip wiring
+
+In upfit mode, include transactional email in the optional-feature menu if it is not already detected. If the user selects it, execute `/senternet-site-email-resend`.
+
+### Step 10: Reddit Pixel *(optional — only if running Reddit ads)*
 
 **Detection:**
 - `src/components/RedditPixel.tsx` exists → skip
 - `index.html` contains Reddit pixel bootstrap stub → skip
 - `VITE_REDDIT_PIXEL_ID` in `.env.production` → skip
 
-Ask: "Do you want to add a Reddit pixel for ad campaigns?" only if none of the above are detected. Execute `/senternet-site-ads-reddit-pixel` if yes.
+In upfit mode, include Reddit pixel in the optional-feature menu if it is not already detected. If the user selects it, execute `/senternet-site-ads-reddit-pixel`.
 
 ---
 
 ## Phase 4: Build Pipeline
 
-### Step 10: Prerendering
+### Step 11: Prerendering
 
 **Detection:**
 - `scripts/prerender.mjs` exists → skip script creation; verify ROUTES list covers current routes
@@ -193,7 +223,7 @@ Execute `/senternet-site-prerender` for any missing pieces.
 
 ## Phase 5: Images
 
-### Step 11: WebP Conversion
+### Step 12: WebP Conversion
 
 **Detection:**
 - `scripts/convert-images.mjs` exists → skip
@@ -202,7 +232,7 @@ Execute `/senternet-site-prerender` for any missing pieces.
 
 Execute `/senternet-site-image-webp` for any missing pieces.
 
-### Step 12: Share Images
+### Step 13: Share Images
 
 **Detection:**
 - `scripts/generate-share-images.mjs` exists → skip
@@ -215,7 +245,7 @@ Execute `/senternet-site-share-images` for any missing pieces.
 
 ## Phase 6: Performance
 
-### Step 13: Lighthouse Optimization
+### Step 14: Lighthouse Optimization
 
 **Detection:**
 - `vite.config.ts` has `modulepreload` injection and `manualChunks` → likely optimized; check `main.tsx` for `app-ready` event
@@ -224,7 +254,7 @@ Execute `/senternet-site-share-images` for any missing pieces.
 
 Execute `/senternet-site-lighthouse` for any missing pieces.
 
-### Step 14: Mobile Optimization
+### Step 15: Mobile Optimization
 
 **Detection:**
 - `public/images/` contains a `-sm.webp` hero variant → skip mobile hero creation
@@ -237,50 +267,50 @@ Execute `/senternet-site-mobile-optimize` for any missing pieces.
 
 ## Phase 7: Optional Features
 
-### Step 15: Multilingual (if requested)
+### Step 16: Multilingual (if requested)
 
 **Detection:**
 - `src/i18n.ts` exists → already multilingual; skip
 - `src/App.tsx` contains `LanguageProvider` → skip
 - Prerender script contains `/es/` routes → skip
 
-If not present, ask: "Do you want Spanish (`/es/`) multilingual support?" Execute `/senternet-site-multilingual` if yes.
+If not present, include Spanish (`/es/`) support in the optional-feature menu in upfit mode. Execute `/senternet-site-multilingual` if the user selects it.
 
-### Step 16: Ad Landing Pages
+### Step 17: Ad Landing Pages
 
 **Detection:**
 - `src/components/LandingPage.tsx` exists → skip base component
 - A campaign-specific landing page route exists in `App.tsx` → skip
 
-Ask: "Do you want ad landing pages for paid campaigns?" only if not detected. Execute `/senternet-site-ads-landing` if yes.
+In upfit mode, include ad landing pages in the optional-feature menu if they are not already detected. Execute `/senternet-site-ads-landing` if the user selects them.
 
-### Step 17: SEO Blog
+### Step 18: SEO Blog
 
 **Detection:**
 - A blog route and blog index component exist in `src/` → skip
 - `src/data/` contains post data → skip
 
-Ask: "Do you want an SEO blog?" only if not detected. Execute `/senternet-site-seo-blog` if yes.
+In upfit mode, include the SEO blog in the optional-feature menu if it is not already detected. Execute `/senternet-site-seo-blog` if the user selects it.
 
-### Step 18: Compare Pages
+### Step 19: Compare Pages
 
 **Detection:**
 - `src/components/ComparePages.tsx` exists → skip
 - Competitor/alternative routes exist in `App.tsx` → skip
 
-Ask: "Do you want competitor comparison/alternative pages for SEO?" only if not detected. Execute `/senternet-site-compare-pages` if yes.
+In upfit mode, include competitor comparison / alternative pages in the optional-feature menu if they are not already detected. Execute `/senternet-site-compare-pages` if the user selects them.
 
-### Step 19: reCAPTCHA Enterprise for Forms
+### Step 20: reCAPTCHA Enterprise for Forms
 
 **Detection:**
 - `gcloud recaptcha keys list --project "$PROJECT_ID"` shows existing local/dev/prod form keys → skip
 - `recaptchaenterprise.googleapis.com` is already enabled → skip API enablement
 
-Ask: "Do you want to add reCAPTCHA Enterprise protection for forms?" only if not detected. Execute `/senternet-recaptcha-enterprise` if yes.
+In upfit mode, include reCAPTCHA Enterprise in the optional-feature menu if it is not already detected. Execute `/senternet-recaptcha-enterprise` if the user selects it.
 
 ---
 
-## Step 20: Verify everything works
+## Step 21: Verify everything works
 
 1. `npm run dev` — dev server starts cleanly
 2. `npm run build:prod` — builds, prerenders all routes (check for `✗ EMPTY` failures)
@@ -292,7 +322,7 @@ Ask: "Do you want to add reCAPTCHA Enterprise protection for forms?" only if not
 
 ---
 
-## Step 21: Initialize Project Documentation
+## Step 22: Initialize Project Documentation
 
 **Detection:**
 - `AGENTS.md` exists → skip generation (do not overwrite existing project docs)

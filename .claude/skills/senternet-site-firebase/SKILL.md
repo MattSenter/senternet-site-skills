@@ -1,11 +1,11 @@
 ---
 name: senternet-site-firebase
-description: Set up Firebase Hosting, project IDs, headers, and deploy scripts.
+description: Set up Firebase Hosting, custom domains, project IDs, headers, and deploy scripts.
 ---
 
 # Firebase Hosting Setup
 
-Add Firebase Hosting to a Vite + React site with optimal caching, security headers, and multi-environment deployment. Can be run on a fresh project or re-run later to add a missing environment.
+Add Firebase Hosting to a Vite + React site with optimal caching, security headers, custom domain handoff, and multi-environment deployment. Can be run on a fresh project or re-run later to add a missing environment or finish domain setup.
 
 ## Prerequisites
 
@@ -30,6 +30,8 @@ Derive a prefix from the site name (lowercase, hyphens, strip trailing `-site`):
 ```
 
 Show the user the derived prefix and ask them to confirm or override it before proceeding. This prefix is used as `$PREFIX-dev` and `$PREFIX-prod` for Firebase project IDs. The Firebase project display name must always match the project ID exactly.
+
+Also derive the canonical public host from the site domain when available. Default to `www.DOMAIN.com` as the primary host and `DOMAIN.com` as the apex that redirects to `www.DOMAIN.com` unless the user explicitly prefers the apex as canonical.
 
 ### 3. Determine which environments to set up
 
@@ -160,6 +162,42 @@ Write only the environments that have been set up (now or previously):
 
 Note: The `&& node scripts/indexnow.mjs` tail on `deploy:prod` is only added if `scripts/indexnow.mjs` exists. Skip it otherwise.
 
+### 9. Set up the custom domain handoff
+
+This step is for the canonical public domain and should be re-runnable without breaking an existing setup.
+
+**Detection:**
+- `.firebase-domain.json` exists and `status` is `connected` for the requested apex/canonical pair → skip this step
+- `.firebase-domain.json` exists but `status` is `pending-dns` or the requested domains changed → patch the file and continue with the handoff
+- `.firebase-domain.json` does not exist → create it as part of the handoff
+
+**Default domain policy:**
+- Primary host: `www.DOMAIN.com`
+- Apex host: `DOMAIN.com`
+- Redirect: `DOMAIN.com` redirects to `www.DOMAIN.com`
+
+**Do the Firebase console setup on behalf of the user as far as possible:**
+- Open the Firebase Hosting domain flow for the production site
+- Add `www.DOMAIN.com` as the main custom domain
+- Add `DOMAIN.com` as the redirecting apex domain
+- Keep the redirect-to-secondary-domain option enabled so the apex forwards to `www`
+- Do not guess DNS values; mirror the exact record types and targets Firebase displays
+- Capture the DNS records Firebase displays and translate them into the user’s DNS provider terminology
+- If the provider already has records pointing elsewhere for the same host, tell the user to remove or replace those records before verification
+
+**Write `.firebase-domain.json` in the target site root** so upfit mode can detect a completed setup on later runs:
+
+```json
+{
+  "apexDomain": "DOMAIN.com",
+  "canonicalHost": "www.DOMAIN.com",
+  "redirectApexToCanonical": true,
+  "status": "pending-dns"
+}
+```
+
+If the user later confirms the domain is connected and SSL is issued, update `status` to `connected` instead of creating a second file.
+
 ## Notes
 
 - `cleanUrls: true` removes `.html` extensions from URLs
@@ -168,3 +206,4 @@ Note: The `&& node scripts/indexnow.mjs` tail on `deploy:prod` is only added if 
 - HTML gets a 1hr cache so deploys propagate quickly without users seeing stale pages
 - Security headers (`X-Frame-Options`, etc.) satisfy Lighthouse Best Practices checks
 - If the app later adds Firebase Functions, update `firebase.json` to include a `functions` key and change `deploy:prod` to `firebase deploy --only hosting,functions`
+- When the custom domain is connected, use `https://www.DOMAIN.com` everywhere in canonical URLs, robots.txt, sitemap generation, and share/meta tags

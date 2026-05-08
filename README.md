@@ -74,17 +74,20 @@ done
 ```
 
 Upfit mode means you point `senternet-create-site` at an existing site folder, and it inspects the project first, then patches only the missing or partial pieces instead of scaffolding a new site from scratch.
+In upfit mode it also reports which optional capabilities are already enabled and presents any missing ones as enablement options, so you can see what changed and what is still available.
+
+The Firebase skill also records custom-domain setup in `.firebase-domain.json` so reruns can detect an already-connected `www`-primary domain and skip the handoff cleanly.
 
 Claude will ask for your app name, domain, design export if you have one (zip/directory/HTML from Claude Design), and other basics. If you do not have a design export, it will create a barebones Hello World site instead. The primary brand color is detected automatically from the design's CSS variables when a design is provided. It then executes all skills in sequence across these phases:
 
 1. **Prerequisites** — gcloud/Firebase auth
 2. **Phase 1** — Vite scaffold, design system, Firebase Hosting
 3. **Phase 2** — SEO (meta tags, robots.txt, sitemap, IndexNow)
-4. **Phase 3** — Analytics (GA4, Reddit pixel)
+4. **Phase 3** — Analytics, email, and Reddit pixel (GA4, Resend, Reddit pixel)
 5. **Phase 4** — Build pipeline (Puppeteer prerendering)
 6. **Phase 5** — Images (WebP conversion, OG share images)
 7. **Phase 6** — Performance (Lighthouse, mobile optimization)
-8. **Phase 7** — Optional (i18n, ad landing pages, blog, compare pages)
+8. **Phase 7** — Optional (i18n, ad landing pages, blog, compare pages, reCAPTCHA)
 
 ### Individual skills
 
@@ -93,8 +96,9 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | `/senternet-site-gcloud-auth` | Authenticate gcloud and Firebase CLI (run once per machine before firebase/GA skills) |
 | `/senternet-site-design` | Convert a Claude Design HTML export into React components with a full design system |
 | `/senternet-site-vite-setup` | Scaffold Vite + React + TypeScript with optimal config |
-| `/senternet-site-firebase` | Firebase Hosting with caching, security headers, multi-env deploy — creates or links Firebase projects after auth and confirmation |
+| `/senternet-site-firebase` | Firebase Hosting with caching, security headers, multi-env deploy, and custom domain handoff — creates or links Firebase projects after auth and confirmation |
 | `/senternet-site-google-analytics` | GA4 with lazy loading and build-time env gating — creates GA4 property and retrieves Measurement ID automatically |
+| `/senternet-site-email-resend` | Transactional email with Resend + Firebase Functions — stores API key in Secret Manager and scaffolds Cloud Functions |
 | `/senternet-recaptcha-enterprise` | reCAPTCHA Enterprise keys for local, dev, and prod forms |
 | `/senternet-site-ads-reddit-pixel` | Reddit Ads conversion pixel with bootstrap stub |
 | `/senternet-site-metatags` | Full SEO meta tags, OG, Twitter Card, schema.org, MetaTags component |
