@@ -82,9 +82,10 @@ In upfit mode, include GitHub setup in the same feature inventory so the user ca
 
 **Detection:**
 - Run `gcloud auth list` — if an active account is shown, skip gcloud auth
-- If `gcloud auth list` fails or no active account is shown because credentials expired, rerun `gcloud auth login` with the standard scopes, then re-run `gcloud auth list` before falling back to full auth
+- If `gcloud auth list` fails or shows no credentialed account in this shell, do not stop there: run `gcloud auth login` with the standard scopes, then re-run `gcloud auth list` in the same shell before falling back to full auth
+- If the machine is headless or browser launch fails, add `--no-browser` so gcloud prints device-flow instructions, then wait for the user to complete the browser/device step and re-run `gcloud auth list`
 - Run `firebase projects:list` — if it succeeds, skip firebase login
-- If `firebase projects:list` fails because the Firebase session expired, run `firebase login --reauth` first, then re-run `firebase projects:list` before falling back to full auth
+- If `firebase projects:list` fails because the Firebase session expired or no active Firebase account is available, run `firebase login --reauth` first, then re-run `firebase projects:list` before falling back to full auth
 
 Execute `/senternet-site-gcloud-auth` for any missing auth.
 
@@ -129,6 +130,7 @@ This step is required for every site, including brand-new creates. Never skip it
 - `firebase.json` exists → check for caching headers, security headers, `cleanUrls`; patch missing config keys
 - `.firebaserc` exists → check for dev/prod project entries; add missing entries
 - `.firebase-domain.json` exists with `status: connected` and the expected apex/canonical pair → skip the custom domain handoff
+- `.firebase-domain.json` exists with `status: pending-dns` → keep moving on later phases and revisit the domain verification after other Firebase-safe steps finish
 - `deploy:prod` script in `package.json` → skip script addition
 
 Execute `/senternet-site-firebase` for any missing pieces, including the custom-domain handoff when `.firebase-domain.json` is absent or still pending.

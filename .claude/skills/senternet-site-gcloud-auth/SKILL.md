@@ -73,7 +73,7 @@ If gcloud credentials have expired, treat the same command as the reauth step:
 gcloud auth login \
   --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
 ```
-If you are on a headless machine, add `--no-browser` so gcloud prints a URL or device-flow instructions instead of opening a browser. After the browser or device flow finishes, re-run `gcloud auth list` to confirm the active account is back.
+If `gcloud auth list` shows no credentialed account in the current shell, treat that as the reauth trigger too. If you are on a headless machine, add `--no-browser` so gcloud prints a URL or device-flow instructions instead of opening a browser. After the browser or device flow finishes, re-run `gcloud auth list` to confirm the active account is back.
 
 ### 4. Set up application default credentials
 

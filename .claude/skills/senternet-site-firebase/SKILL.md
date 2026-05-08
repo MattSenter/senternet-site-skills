@@ -171,6 +171,14 @@ This step is for the canonical public domain and should be re-runnable without b
 - `.firebase-domain.json` exists but `status` is `pending-dns` or the requested domains changed → patch the file and continue with the handoff
 - `.firebase-domain.json` does not exist → create it as part of the handoff
 
+**If DNS or ACME validation is still propagating, do not stop the workflow here.**
+Instead, set the domain state to `pending-dns`, explain that Firebase may need time to verify the records and issue SSL, and offer to continue with the next available setup steps while waiting. Those next steps can include:
+- deploying hosting to the Firebase project
+- finishing SEO files or deploy scripts that do not depend on the domain being live
+- returning later to re-check the DNS and certificate status
+
+When you come back later, re-open the Firebase domain flow and verify the records and SSL status before marking the domain `connected`.
+
 **Default domain policy:**
 - Primary host: `www.DOMAIN.com`
 - Apex host: `DOMAIN.com`

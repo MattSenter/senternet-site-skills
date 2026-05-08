@@ -99,6 +99,7 @@ Upfit mode means you point `senternet-create-site` at an existing site folder, a
 In upfit mode it also reports which optional capabilities are already enabled and presents any missing ones as enablement options, so you can see what changed and what is still available.
 
 The Firebase skill also records custom-domain setup in `.firebase-domain.json` so reruns can detect an already-connected `www`-primary domain and skip the handoff cleanly.
+If DNS or certificate issuance is still pending, the workflow should continue with Firebase-safe follow-up steps and revisit the domain verification later instead of stalling the whole setup.
 
 Claude will ask for your app name, domain, design export if you have one (zip/directory/HTML from Claude Design), and other basics. If you do not have a design export, it will create a barebones Hello World site instead. The primary brand color is detected automatically from the design's CSS variables when a design is provided. It then executes all skills in sequence across these phases:
 
