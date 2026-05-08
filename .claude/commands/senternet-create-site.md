@@ -202,6 +202,14 @@ If no, skip this step.
 6. Fix any Lighthouse failures before first production deploy
 7. `npm run deploy:prod` — deploys to production + runs IndexNow
 
+## Step 18: Initialize Project Documentation
+
+Execute `/senternet-site-init`:
+- Read the completed project files to understand its full structure
+- Generate `AGENTS.md` with comprehensive codebase context (tech stack, architectural decisions, build pipeline, three-file rule, env vars, Firebase projects)
+- Write `CLAUDE.md` containing only `See AGENTS.md for rules`
+- Generate `README.md` with quick-start, deploy commands, scripts table, and architecture summary
+
 ---
 
 ## Three-file rule (enforce for every new page)

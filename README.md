@@ -2,9 +2,46 @@
 
 Claude Code slash commands for spinning up production-ready marketing sites.
 
-## How to use
+Each `.md` file in `.claude/commands/` becomes a `/senternet-*` slash command. There is no application code here — the repo is prompt engineering for site-building workflows.
 
-Copy `.claude/commands/` into any new site project (or symlink it). The skills become available as slash commands in Claude Code.
+## Installation
+
+### Local (per-project)
+
+Copy or symlink the commands directory into any site project:
+
+```bash
+# Copy
+cp -r /path/to/senternet-site-skills/.claude/commands /your-project/.claude/commands
+
+# Or symlink
+ln -s /path/to/senternet-site-skills/.claude/commands /your-project/.claude/commands
+```
+
+Skills are then available as slash commands when Claude Code is run inside that project.
+
+### Global (all projects, all agent types)
+
+Skills must be installed in two locations to work with both Claude Code and other agent runtimes:
+
+```bash
+# Claude Code CLI
+cp .claude/commands/* ~/.claude/commands/
+
+# Agent runtimes (Agents SDK, etc.)
+cp .claude/commands/* ~/.agents/skills/
+```
+
+To keep them in sync going forward, symlink the source instead of copying:
+
+```bash
+for f in .claude/commands/*; do
+  ln -sf "$(pwd)/$f" ~/.claude/commands/$(basename $f)
+  ln -sf "$(pwd)/$f" ~/.agents/skills/$(basename $f)
+done
+```
+
+## Usage
 
 ### Spin up a complete site
 
@@ -12,7 +49,16 @@ Copy `.claude/commands/` into any new site project (or symlink it). The skills b
 /senternet-create-site
 ```
 
-Claude will ask for your app name, domain, brand color, and other basics, then execute all skills in sequence.
+Claude will ask for your app name, domain, brand color, and other basics, then execute all skills in sequence across these phases:
+
+1. **Prerequisites** — gcloud/Firebase auth
+2. **Phase 1** — Vite scaffold, design system, Firebase Hosting
+3. **Phase 2** — SEO (meta tags, robots.txt, sitemap, IndexNow)
+4. **Phase 3** — Analytics (GA4, Reddit pixel)
+5. **Phase 4** — Build pipeline (Puppeteer prerendering)
+6. **Phase 5** — Images (WebP conversion, OG share images)
+7. **Phase 6** — Performance (Lighthouse, mobile optimization)
+8. **Phase 7** — Optional (i18n, ad landing pages, blog, compare pages)
 
 ### Individual skills
 
@@ -38,15 +84,32 @@ Claude will ask for your app name, domain, brand color, and other basics, then e
 | `/senternet-site-seo-blog` | SEO blog with prerendered posts, share images, and tag index pages |
 | `/senternet-site-compare-pages` | Competitor alternative and vs. pages for SEO |
 | `/senternet-site-csp` | Content Security Policy header with coverage for all third-party services in the suite |
+| `/senternet-site-init` | Generate AGENTS.md, CLAUDE.md, and README.md for the completed site |
 
-## The three-file rule
+## Generated site stack
 
-Every new page must update three files together:
+Skills produce sites with this tech stack:
+
+- **Vite + React + TypeScript** — scaffolded via `senternet-site-vite-setup`
+- **Tailwind CSS v4** — imported via `@import "tailwindcss"` in `src/index.css`
+- **Firebase Hosting** — static host, `build/` as public dir (not `dist/`)
+- **Puppeteer prerendering** — every route gets a real HTML snapshot at build time
+
+### The three-file rule
+
+Every new page/route must update all three of these files together:
+
 1. `src/App.tsx` — add the `<Route>`
-2. `scripts/prerender.mjs` — add to ROUTES array
-3. `public/sitemap.xml` — add a `<url>` entry
+2. `scripts/prerender.mjs` — add to `ROUTES` array
+3. `scripts/generate-sitemap.mjs` — add to `ROUTES` array
 
-Missing any one means the page has no static HTML for crawlers, no sitemap entry for indexing, or both.
+Missing any one means the page has no static HTML for crawlers, no sitemap entry, or both.
+
+## Adding a skill
+
+1. Create `.claude/commands/senternet-site-<feature>.md`
+2. Add a row to the table above
+3. If it belongs in the full site setup, add its execution step to `senternet-create-site.md` in the correct phase order
 
 ## Target Lighthouse scores (mobile)
 
