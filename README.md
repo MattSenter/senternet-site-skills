@@ -8,19 +8,19 @@ Each skill in `.claude/skills/` is a directory containing `SKILL.md` and becomes
 
 ### Global (all projects)
 
-Copy the skill directories to `~/.claude/skills/`:
+Copy the skill directories to both `~/.claude/skills/` (Claude Code) and `~/.agents/skills/` (Agents SDK and other runtimes):
 
 ```bash
 cp -r .claude/skills/senternet-* ~/.claude/skills/
+cp -r .claude/skills/senternet-* ~/.agents/skills/
 ```
-
-Skills are then available as slash commands in any Claude Code session.
 
 To keep them in sync going forward, symlink each skill directory instead of copying:
 
 ```bash
 for dir in .claude/skills/senternet-*/; do
   ln -sf "$(pwd)/$dir" ~/.claude/skills/$(basename "$dir")
+  ln -sf "$(pwd)/$dir" ~/.agents/skills/$(basename "$dir")
 done
 ```
 
