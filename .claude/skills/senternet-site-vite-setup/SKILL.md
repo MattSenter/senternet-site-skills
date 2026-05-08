@@ -55,6 +55,7 @@ Initialize a production-ready Vite + React + TypeScript project for a marketing 
    VITE_BASE_URL=https://www.yoursite.com
    VITE_GA_ID=G-XXXXXXXXXX
    ```
+   If the repo already has a non-empty `VITE_GA_ID` in `.env.production`, preserve it during upfit runs and do not overwrite it with the placeholder. Only use `G-XXXXXXXXXX` as the initial scaffold value when no Measurement ID has been established yet.
 
 8. Update `package.json` scripts:
    ```json

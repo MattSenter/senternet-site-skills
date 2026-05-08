@@ -127,7 +127,7 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | `/senternet-site-robots` | robots.txt pointing to sitemap |
 | `/senternet-site-sitemap` | Sitemap XML generation script with multilingual hreflang support |
 | `/senternet-site-indexnow` | IndexNow submission to Bing on every deploy |
-| `/senternet-site-google-analytics` | GA4 with lazy loading and build-time env gating — links Firebase to Analytics, creates GA4 property, and retrieves Measurement ID automatically |
+| `/senternet-site-google-analytics` | GA4 with lazy loading and build-time env gating — guides Firebase Console linking and retrieves or confirms the Measurement ID |
 | `/senternet-site-email-resend` | Transactional email with Resend + Firebase Functions — stores API key in Secret Manager and scaffolds Cloud Functions |
 | `/senternet-recaptcha-enterprise` | reCAPTCHA Enterprise keys for local, dev, and prod forms |
 | `/senternet-site-ads-reddit-pixel` | Reddit Ads conversion pixel with bootstrap stub |

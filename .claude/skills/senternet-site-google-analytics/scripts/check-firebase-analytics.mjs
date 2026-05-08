@@ -43,7 +43,50 @@ function getProjectId() {
   return readFirebaseProjectId();
 }
 
+function isSandboxConfigError(error) {
+  const message = [
+    error?.message,
+    error?.stderr?.toString?.(),
+    error?.stdout?.toString?.(),
+  ]
+    .filter(Boolean)
+    .join('\n')
+    .toLowerCase();
+
+  return (
+    message.includes('workspace sandbox') ||
+    message.includes('outside the workspace') ||
+    message.includes('outside workspace') ||
+    message.includes('permission denied') ||
+    message.includes('eacces') ||
+    message.includes('eperm') ||
+    message.includes('cannot access') ||
+    message.includes('config directory') ||
+    message.includes('~/.config')
+  );
+}
+
 function getAccessToken() {
+  let activeAccount = '';
+  try {
+    activeAccount = execFileSync('gcloud', ['auth', 'list', '--filter=status:ACTIVE', '--format=value(account)'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  } catch (error) {
+    const stderr = error?.stderr?.toString?.().trim();
+    if (stderr) {
+      console.error(stderr);
+    }
+    if (isSandboxConfigError(error)) {
+      throw new Error('The sandbox cannot read the active gcloud config under ~/.config. Run gcloud auth login in your terminal, then rerun this check from Step 1a.');
+    }
+  }
+
+  if (!activeAccount) {
+    throw new Error('No active gcloud account found. Run BROWSER=open gcloud auth login, then rerun this check.');
+  }
+
   try {
     return execFileSync('gcloud', ['auth', 'print-access-token'], {
       encoding: 'utf8',
@@ -54,7 +97,10 @@ function getAccessToken() {
     if (stderr) {
       console.error(stderr);
     }
-    throw new Error('Failed to get a Google Cloud access token. Run gcloud auth login first.');
+    if (isSandboxConfigError(error)) {
+      throw new Error('The sandbox cannot read the active gcloud config under ~/.config. Run gcloud auth login in your terminal, then rerun this check from Step 1a.');
+    }
+    throw new Error('Failed to get a Google Cloud access token.');
   }
 }
 
@@ -80,6 +126,7 @@ async function main() {
   if (response.ok) {
     const data = await response.json();
     const property = data.analyticsProperty || {};
+    const streamMappings = Array.isArray(data.streamMappings) ? data.streamMappings : [];
     console.log('Firebase Analytics link: linked');
     if (property.id) {
       console.log(`Analytics property ID: ${property.id}`);
@@ -89,6 +136,25 @@ async function main() {
     }
     if (property.analyticsAccountId) {
       console.log(`Analytics account ID: ${property.analyticsAccountId}`);
+    }
+    if (streamMappings.length > 0) {
+      console.log(`Analytics stream mappings: ${streamMappings.length}`);
+      for (const mapping of streamMappings) {
+        if (mapping?.app) {
+          console.log(`- App: ${mapping.app}`);
+        }
+        if (mapping?.streamId) {
+          console.log(`  Stream ID: ${mapping.streamId}`);
+        }
+        if (mapping?.measurementId) {
+          console.log(`  Measurement ID: ${mapping.measurementId}`);
+        }
+      }
+    } else {
+      console.log('Analytics stream mappings: none');
+      console.log('Firebase web stream: missing');
+      process.exitCode = 3;
+      return;
     }
     process.exitCode = 0;
     return;

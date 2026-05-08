@@ -75,7 +75,20 @@ Immediately confirm it shows up in `firebase projects:list`. If it does not, sto
 If creation fails with "project ID already taken", check if the user owns it via `firebase projects:list`. If they do, proceed — the project exists and we'll just reference it. If they don't own it, ask them to choose a different prefix.
 If creation fails because the Firebase session expired, run `firebase login --reauth`, re-run `firebase projects:list`, and only retry project creation after the reauth succeeds.
 
-After the Firebase project exists, resolve the production project ID from `.firebaserc` and run `node .claude/skills/senternet-site-google-analytics/scripts/check-firebase-analytics.mjs --project PROJECT_ID` against that exact project. If it reports `Firebase Analytics link: not linked`, run `/senternet-site-google-analytics` and let that skill attempt the browser-based Google auth flow on your behalf before telling the user to do anything manually. Re-check until the helper reports `linked`.
+After the Firebase project exists, create or verify the Firebase web app for the Hosting project and capture its config automatically with the Firebase CLI:
+```bash
+firebase apps:create web --display-name "APP_NAME" --project PROJECT_ID
+firebase apps:sdkconfig web FIREBASE_APP_ID --project PROJECT_ID
+```
+
+If you are creating a new Hosting site, associate the existing web app at creation time:
+```bash
+firebase hosting:sites:create SITE_ID --app FIREBASE_APP_ID
+```
+
+If the Hosting site already exists and the CLI cannot attach the web app to it, stop and tell the user exactly which Firebase Console step is still required to connect the web app to the Hosting site.
+
+Use the returned config values to populate the repo’s Firebase configuration files or handoff artifact as needed. Do not ask the user to copy config values manually unless the CLI cannot print them.
 
 ### 6. Write `firebase.json`
 

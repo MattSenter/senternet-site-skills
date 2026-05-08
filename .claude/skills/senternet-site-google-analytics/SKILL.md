@@ -5,13 +5,13 @@ description: Add GA4 with build-time env gating and lazy loading.
 
 # Google Analytics (GA4) Setup
 
-Add GA4 to a Vite + React site with lazy loading, environment gating, and no render-blocking. Automatically links the Firebase project to Google Analytics, creates or reuses a GA4 property, and retrieves the Measurement ID via the Analytics Admin API.
+Add GA4 to a Vite + React site with lazy loading, environment gating, and no render-blocking. Use the Firebase Console to link the Firebase project to Google Analytics, then retrieve or confirm the Measurement ID.
 
 ## Prerequisites
 
-Run `/senternet-site-gcloud-auth` first if you haven't authenticated this machine yet (requires the `analytics.edit` scope). The auth skill should try the browser-based Google login flow on behalf of the user before asking them to do anything manually; only fall back to an explicit command if that browser flow cannot complete in this environment.
+Run `/senternet-site-gcloud-auth` first if you haven't authenticated this machine yet (requires the `analytics.edit` scope). The auth skill should try the browser-based Google login flow on behalf of the user before asking them to do anything manually; only fall back to an explicit command if that browser flow cannot complete in this environment. Never try to complete ADC or quota-project setup automatically inside this flow.
 
-If the site already has a Firebase project, make sure the Firebase project is linked to Google Analytics before wiring the Measurement ID. An unlinked Firebase project will still show "Get started" in the console even if the website code is sending GA hits.
+If the site already has a Firebase project, link it to Google Analytics in the Firebase Console before wiring the Measurement ID. There is no CLI link path in this skill.
 
 ## Design principles
 
@@ -22,52 +22,18 @@ If the site already has a Firebase project, make sure the Firebase project is li
 
 ## Steps
 
-### 1. Link the Firebase project to Google Analytics
+### 1. Link the Firebase project to Google Analytics manually
 
-If the Firebase project is not yet linked, use the Firebase Management API to enable Analytics for the project first.
+If the Firebase project is not yet linked, open the Firebase Console and complete the link there. There is no CLI path in this skill for creating the Firebase ↔ Google Analytics connection.
 
-**Step 1a — Check whether Analytics is already linked:**
-```bash
-node .claude/skills/senternet-site-google-analytics/scripts/check-firebase-analytics.mjs --project PROJECT_ID
-```
+Use this flow:
+1. Open the Firebase Console for the exact project ID from `.firebaserc`.
+2. Go to Project settings, then the Google Analytics / Integrations section.
+3. Click the link option and connect the project to the correct GA account or property.
+4. Finish the browser flow until the Firebase Console shows the project is linked.
+5. Return here only after the link is visible in the console.
 
-The helper prints the exact Firebase project ID it checked. If it reports `Firebase Analytics link: linked`, stop here and continue to step 2. If it reports `Firebase Analytics link: not linked` or exits with code `2`, continue to step 1b.
-
-**Step 1b — Link the Firebase project to an existing GA account:**
-```bash
-TOKEN=$(gcloud auth print-access-token)
-curl -s -X POST \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "analyticsAccountId": "ACCOUNT_ID"
-  }' \
-  "https://firebase.googleapis.com/v1beta1/projects/PROJECT_ID:addGoogleAnalytics" | python3 -m json.tool
-```
-
-Use the Google Analytics account that should own the site's property. If the project already has a linked property and the user wants to keep it, do not call this endpoint again with a different property ID.
-
-Poll the returned `Operation` with `operations.get` until `done` is `true` if Firebase reports the link as still provisioning.
-
-If the call fails with `403`, re-run `/senternet-site-gcloud-auth` and confirm the Google account has Owner access to the Firebase project and Edit access to the GA account.
-
-If the project is still unlinked or auth is missing, do not stop at a generic handoff. Attempt the browser-based auth flow immediately, then retry the link check:
-```bash
-gcloud auth login \
-  --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
-
-gcloud auth application-default login \
-  --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
-
-firebase login --reauth
-```
-
-If the browser flow fails because the environment cannot open a browser or complete interactive auth, show the user the exact command to run next. For headless sessions, use:
-```bash
-gcloud auth login --no-browser --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
-gcloud auth application-default login --no-browser --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
-firebase login --reauth --no-localhost
-```
+Do not try to link the project with `addGoogleAnalytics`, `analyticsDetails`, or any other CLI/API step in this skill. If the project is already linked, skip straight to the Measurement ID step below.
 
 ### 2. Get a GA4 Measurement ID via the Analytics Admin API
 
@@ -129,7 +95,7 @@ MEASUREMENT_ID=$(curl -s -X POST \
 echo "Measurement ID: $MEASUREMENT_ID"
 ```
 
-If any step fails with a 403, the token is missing the analytics scope. Run `/senternet-site-gcloud-auth` again, and try the browser-based auth commands above before telling the user they need to intervene.
+If any step fails with a 403, the token is missing the analytics scope. Run `/senternet-site-gcloud-auth` again and retry with the browser-based auth commands above.
 
 If the user already has a Measurement ID they want to use, accept it and skip the API steps above.
 

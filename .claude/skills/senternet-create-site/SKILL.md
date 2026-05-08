@@ -192,21 +192,20 @@ Execute `/senternet-site-indexnow` for any missing pieces.
 
 ## Phase 3: Analytics, Email & Tracking
 
-### Step 9: Google Analytics
+### Step 9: Google Analytics / Firebase Web App Setup
 
 **Detection:**
 - `index.html` contains `<!-- GA_START -->` comment marker → GA block already present
-- `.env.production` contains `VITE_GA_ID` → skip env var setup
+- `.env.production` contains a non-empty `VITE_GA_ID=G-...` value → skip env var setup
 - `vite.config.ts` has `htmlPlugin` handling GA injection → skip plugin verification
-- `.firebaserc` contains a production project ID → use that project ID for the Analytics link check
-- `node .claude/skills/senternet-site-google-analytics/scripts/check-firebase-analytics.mjs --project PROJECT_ID` reports `Firebase Analytics link: linked` → skip Firebase Analytics linking
-- The helper reports `Firebase Analytics link: not linked` or exits `2` → the Firebase project is not linked yet, even if the GA block is already present, so run `/senternet-site-google-analytics`
+- The Firebase project already has a web app configured, the Hosting site association is complete, and `.env.production` already has a non-empty GA ID → skip Firebase web-app setup
+- The Firebase project still needs a web app or Hosting association → run `/senternet-site-firebase` and follow its automated Firebase CLI flow
 
 Execution rule:
-- Resolve the production Firebase project ID first. Prefer `.firebaserc` default, then `.firebaserc` `prod`, then `firebase projects:list` if needed.
-- Run the helper against that exact production project ID before deciding GA is complete.
-- If the helper says `not linked`, run the Firebase Analytics link flow immediately and re-run the helper until it says `linked`.
-- Do not stop at the front-end GA markers. The step is not complete until the Firebase project itself is linked.
+- Resolve the production Firebase project ID first if you need it for the manual instructions, but do not use it to call `analyticsDetails` or `addGoogleAnalytics`.
+- If the Firebase project still needs the web app or Hosting association, run `/senternet-site-firebase` first.
+- Once the web app is created and the config is captured, either accept an existing Measurement ID or continue with the existing Measurement ID retrieval / env wiring step.
+- Do not stop at the front-end GA markers alone. The step is not complete until the Firebase project has a web app, the Hosting association is in place, and `.env.production` has the Measurement ID.
 
 ### Step 10: Transactional Email via Resend *(optional — for forms, notifications, or onboarding)*
 

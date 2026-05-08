@@ -59,32 +59,28 @@ Alternatively, download and run the interactive installer from the Google Cloud 
 
 ### 3. Authenticate gcloud (user credentials)
 
+Run this command immediately in the terminal:
 ```bash
-gcloud auth login \
-  --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
+gcloud auth login
 ```
 
-A browser window opens — sign in with the Google account that owns your Firebase projects and GA4 account. The extra scopes are required for creating GA4 properties via API.
+A browser window opens — sign in with the Google account that owns your Firebase projects and GA4 account.
 
-**Windows (PowerShell):** If `--scopes` causes issues, run without it first to verify auth works, then re-run with the scopes flag.
+**Windows (PowerShell):** If browser launching behaves oddly, make sure your default browser is set correctly and rerun the command.
 
-If gcloud credentials have expired, treat the same command as the reauth step:
+If gcloud credentials have expired, immediately re-run the same command above:
 ```bash
-gcloud auth login \
-  --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
+gcloud auth login
 ```
-If `gcloud auth list` shows no credentialed account in the current shell, treat that as the reauth trigger too. If you are on a headless machine, add `--no-browser` so gcloud prints a URL or device-flow instructions instead of opening a browser. After the browser or device flow finishes, re-run `gcloud auth list` to confirm the active account is back.
-
-### 4. Set up application default credentials
-
+If `gcloud auth list` shows no credentialed account in the current shell, immediately run the same browser-based login command above. Do not stop and ask the user to do it manually. If a browser opens, let the user sign in there and wait for completion. Only use `--no-browser` if the user explicitly says the machine is headless.
+If a tool or script reports `no active account`, treat that as a trigger to launch the browser-based `gcloud auth login` command, not as a terminal failure.
+If browser auth cannot start or Google blocks the consent screen, stop immediately and tell the user to run this exact command themselves:
 ```bash
-gcloud auth application-default login \
-  --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
+gcloud auth login
 ```
+Then resume from step 3 after it succeeds.
 
-Sign in again in the browser (same account). This is separate from step 3 — ADC is used when scripts make API calls on your behalf.
-
-### 5. Check and install Firebase CLI
+### 4. Check and install Firebase CLI
 
 ```bash
 which firebase 2>/dev/null || firebase --version 2>/dev/null
@@ -95,8 +91,9 @@ If not installed (same command across all platforms — requires Node.js):
 npm install -g firebase-tools
 ```
 
-### 6. Authenticate Firebase CLI
+### 5. Authenticate Firebase CLI
 
+Run this command immediately in the terminal:
 ```bash
 firebase login
 ```
@@ -109,13 +106,10 @@ If Firebase CLI auth has expired, use reauth instead of a fresh login:
 ```bash
 firebase login --reauth
 ```
-If that opens a browser, sign in with the same Google account that owns the Firebase projects. If you are on a headless machine, use:
-```bash
-firebase login --reauth --no-localhost
-```
+If that opens a browser, sign in with the same Google account that owns the Firebase projects. Only use `--no-localhost` if the user explicitly says the machine is headless.
 When the CLI says the browser flow is complete, return to the terminal and re-run `firebase projects:list` to confirm the session is active.
 
-### 7. Verify everything
+### 6. Verify everything
 
 ```bash
 gcloud auth list
@@ -129,18 +123,18 @@ Both should show your authenticated account. `firebase projects:list` will show 
 If you need to switch Google accounts or credentials expire:
 ```bash
 gcloud auth revoke
-gcloud auth login --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
-gcloud auth application-default login --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
+gcloud auth login
 firebase login --reauth
 ```
 
-If `gcloud auth list` stops showing an active account after an idle period, rerun `gcloud auth login` with the scopes above first. If that succeeds, continue; if it still fails, run the full reauthentication block.
+If `gcloud auth list` stops showing an active account after an idle period, rerun `gcloud auth login` first. If that succeeds, continue; if it still fails, run the full reauthentication block.
 
 If `firebase projects:list` starts failing after an idle period, prefer `firebase login --reauth` first, then run `firebase projects:list` again. If that still fails, re-run the full authentication flow above.
 
 ## Notes
 
 - The `analytics.edit` scope is required for the GA4 skill to create properties and get Measurement IDs via the Analytics Admin API.
-- `gcloud auth login` and `gcloud auth application-default login` are separate credential stores — both must be set up.
+- `gcloud auth login` is the credential store used by the GA and Firebase link checks in this repo.
+- If a later GA or Firebase API call explicitly requires ADC plus a quota project, stop and show the user the manual ADC commands instead of trying to recover in the background. Do not run `gcloud auth application-default login` automatically in that case.
 - Credentials persist across terminal sessions; you only need to re-run this when tokens expire or you switch accounts.
 - On Windows, prefer PowerShell over CMD. Git Bash also works but may have PATH quirks after gcloud installation.
