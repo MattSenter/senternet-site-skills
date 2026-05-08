@@ -50,11 +50,23 @@ done
 
 ### Spin up a complete site
 
-```
+```bash
+# 1. Design zip
+/senternet-create-site /path/to/design-export.zip
+
+# 2. Design folder
+/senternet-create-site /path/to/design-export/
+
+# 3. Existing site folder (upfit mode)
+/senternet-create-site /path/to/existing-site/
+
+# 4. No parameter (Hello World scaffold)
 /senternet-create-site
 ```
 
-Claude will ask for your app name, domain, design export (zip/directory/HTML from Claude Design), and other basics. The primary brand color is detected automatically from the design's CSS variables. It then executes all skills in sequence across these phases:
+Upfit mode means you point `senternet-create-site` at an existing site folder, and it inspects the project first, then patches only the missing or partial pieces instead of scaffolding a new site from scratch.
+
+Claude will ask for your app name, domain, design export if you have one (zip/directory/HTML from Claude Design), and other basics. If you do not have a design export, it will create a barebones Hello World site instead. The primary brand color is detected automatically from the design's CSS variables when a design is provided. It then executes all skills in sequence across these phases:
 
 1. **Prerequisites** — gcloud/Firebase auth
 2. **Phase 1** — Vite scaffold, design system, Firebase Hosting

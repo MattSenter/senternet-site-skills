@@ -14,7 +14,7 @@ Spin up or upfit a fully optimized marketing site by executing all site skills i
 Before asking anything, check whether the user provided a path to an existing directory:
 
 - **Existing directory** — run in **upfit mode**: navigate to that directory and detect what's already implemented before each step. Skip steps that are complete, patch steps that are partial.
-- **No directory provided** — run in **create mode**: ask all intake questions and build from scratch.
+- **No directory provided** — run in **create mode**: ask the intake questions below and build from scratch. If the user does not have a design zip, directory, or HTML export, default to a barebones Hello World site using the requested project and directory names.
 
 ---
 
@@ -24,7 +24,7 @@ Before asking anything, check whether the user provided a path to an existing di
 1. **Site name** (e.g. `myapp-site`) — used as the directory name
 2. **App/product name** (e.g. `MyApp`) — used in copy, meta tags, schema.org
 3. **Domain** (e.g. `www.myapp.com`) — used in canonical URLs, sitemap, IndexNow
-4. **Design export** — path to the zip file, directory, or HTML file exported from Claude Design (or another design tool). The primary brand color will be detected automatically from the design's CSS variables.
+4. **Design export** — path to the zip file, directory, or HTML file exported from Claude Design (or another design tool). If they do not have one, skip this input and create a barebones Hello World site instead.
 5. **App Store URL** (if iOS app, e.g. `https://apps.apple.com/app/...`) — used in CTA links
 6. **Twitter/X handle** (e.g. `@MyAppHQ`) — used in Twitter Card meta tags
 7. **Multilingual?** (yes/no) — whether to add Spanish (`/es/`) support
@@ -90,7 +90,12 @@ Execute `/senternet-site-vite-setup` for any missing pieces.
 **Detection:**
 - `src/styles/design-system.css` exists → skip design extraction
 - `src/pages/` and `src/components/` contain React components → skip component conversion
-- Ask about design export only if components are absent
+- Ask about design export only if components are absent and the user actually has a design export
+
+**No design export fallback:**
+- If the user does not have a design zip, directory, or HTML export, do not invoke `/senternet-site-design`
+- Create a minimal Hello World home page using the requested site name and app/product name
+- Keep the site intentionally barebones; the goal is a working scaffold rather than an extracted visual design
 
 Execute `/senternet-site-design` if components are missing or the user wants to re-import a new design.
 
