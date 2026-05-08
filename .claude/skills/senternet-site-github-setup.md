@@ -110,10 +110,35 @@ Confirm that `.env*` files, `service-account*.json`, and any credential files ar
 
 Ask the user: "Do you want to create an initial commit with the project skeleton?"
 
-If yes:
-```bash
-git add .
-git commit -m "Initial project scaffold"
+If yes, create the commit using the first available method:
+1. **MCP server** — use the GitHub MCP server if configured
+2. **`gh` CLI** — use `gh` if available
+3. **Git CLI** — fall back to plain `git commit`
+
+Use this commit format for all commits on this project:
+
+```
+<title>: TICKET-ID Brief summary
+
+# Problem
+<what was broken or missing>
+
+# Solution
+<what was done to fix or address it>
+
+# Additional Context
+<optional — include only when non-obvious background is needed>
+```
+
+For the initial commit, omit the ticket ID segment (no placeholder):
+```
+init: Initial project scaffold
+
+# Problem
+No repository or project structure existed.
+
+# Solution
+Scaffolded Vite + React + TypeScript project with Firebase config and .gitignore.
 ```
 
 If no, stop here — the repo is initialized and `.gitignore` is in place.
@@ -264,7 +289,7 @@ If the user wants neither, skip this step. GitHub operations will require manual
 
 ---
 
-**Tooling preference recorded:** Use the MCP server for all GitHub interactions in this session (issue lookups, PR creation, repo management). Fall back to `gh` CLI commands only if MCP is unavailable. If neither is set up, use plain `git` commands and ask the user to run anything that requires GitHub API access manually.
+**Tooling preference recorded:** For all commits and GitHub interactions (issue lookups, PR creation, repo management), use this priority order: MCP server → `gh` CLI → plain `git`/CLI. If neither MCP nor `gh` is set up, use plain `git` commands and ask the user to run anything that requires GitHub API access manually.
 
 ### 7. Create GitHub remote (optional)
 

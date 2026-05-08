@@ -2,7 +2,7 @@
 
 Claude Code slash commands for spinning up production-ready marketing sites.
 
-Each `.md` file in `.claude/commands/` becomes a `/senternet-*` slash command. There is no application code here — the repo is prompt engineering for site-building workflows.
+Each `.md` file in `.claude/skills/` becomes a `/senternet-*` slash command. There is no application code here — the repo is prompt engineering for site-building workflows.
 
 ## Installation
 
@@ -12,10 +12,10 @@ Copy or symlink the commands directory into any site project:
 
 ```bash
 # Copy
-cp -r /path/to/senternet-site-skills/.claude/commands /your-project/.claude/commands
+cp -r /path/to/senternet-site-skills/.claude/skills /your-project/.claude/skills
 
 # Or symlink
-ln -s /path/to/senternet-site-skills/.claude/commands /your-project/.claude/commands
+ln -s /path/to/senternet-site-skills/.claude/skills /your-project/.claude/skills
 ```
 
 Skills are then available as slash commands when Claude Code is run inside that project.
@@ -26,17 +26,17 @@ Skills must be installed in two locations to work with both Claude Code and othe
 
 ```bash
 # Claude Code CLI
-cp .claude/commands/* ~/.claude/commands/
+cp .claude/skills/* ~/.claude/skills/
 
 # Agent runtimes (Agents SDK, etc.)
-cp .claude/commands/* ~/.agents/skills/
+cp .claude/skills/* ~/.agents/skills/
 ```
 
 To keep them in sync going forward, symlink the source instead of copying:
 
 ```bash
-for f in .claude/commands/*; do
-  ln -sf "$(pwd)/$f" ~/.claude/commands/$(basename $f)
+for f in .claude/skills/*; do
+  ln -sf "$(pwd)/$f" ~/.claude/skills/$(basename $f)
   ln -sf "$(pwd)/$f" ~/.agents/skills/$(basename $f)
 done
 ```
@@ -107,7 +107,7 @@ Missing any one means the page has no static HTML for crawlers, no sitemap entry
 
 ## Adding a skill
 
-1. Create `.claude/commands/senternet-site-<feature>.md`
+1. Create `.claude/skills/senternet-site-<feature>.md`
 2. Add a row to the table above
 3. If it belongs in the full site setup, add its execution step to `senternet-create-site.md` in the correct phase order
 
