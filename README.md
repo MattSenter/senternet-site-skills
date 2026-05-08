@@ -2,7 +2,7 @@
 
 Claude Code slash commands for spinning up production-ready marketing sites.
 
-Each skill in `.claude/skills/` is a directory containing `SKILL.md` and becomes a `/senternet-*` slash command. There is no application code here — the repo is prompt engineering for site-building workflows.
+Each skill in `.claude/skills/` is a directory containing `SKILL.md` and becomes a `/senternet-*` slash command in Claude Code or a `$senternet-*` command in Codex. There is no application code here — the repo is prompt engineering for site-building workflows.
 
 ## Prerequisites
 
@@ -59,6 +59,10 @@ done
 
 ### Spin up a complete site
 
+#### Claude Code
+
+Start the getting-started skill with `/senternet-create-site`:
+
 ```bash
 # 1. Design zip
 /senternet-create-site /path/to/design-export.zip
@@ -71,6 +75,24 @@ done
 
 # 4. No parameter (Hello World scaffold)
 /senternet-create-site
+```
+
+#### Codex
+
+Start the same skill with `$senternet-create-site`:
+
+```bash
+# 1. Design zip
+$senternet-create-site /path/to/design-export.zip
+
+# 2. Design folder
+$senternet-create-site /path/to/design-export/
+
+# 3. Existing site folder (upfit mode)
+$senternet-create-site /path/to/existing-site/
+
+# 4. No parameter (Hello World scaffold)
+$senternet-create-site
 ```
 
 Upfit mode means you point `senternet-create-site` at an existing site folder, and it inspects the project first, then patches only the missing or partial pieces instead of scaffolding a new site from scratch.
