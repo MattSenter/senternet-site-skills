@@ -62,7 +62,9 @@ Ask: "Do you want to set up a git repo and GitHub remote now?" only if `.git/` d
 
 **Detection:**
 - Run `gcloud auth list` — if an active account is shown, skip gcloud auth
+- If `gcloud auth list` fails or no active account is shown because credentials expired, rerun `gcloud auth login` with the standard scopes, then re-run `gcloud auth list` before falling back to full auth
 - Run `firebase projects:list` — if it succeeds, skip firebase login
+- If `firebase projects:list` fails because the Firebase session expired, run `firebase login --reauth` first, then re-run `firebase projects:list` before falling back to full auth
 
 Execute `/senternet-site-gcloud-auth` for any missing auth.
 

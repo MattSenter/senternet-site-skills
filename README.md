@@ -4,6 +4,15 @@ Claude Code slash commands for spinning up production-ready marketing sites.
 
 Each skill in `.claude/skills/` is a directory containing `SKILL.md` and becomes a `/senternet-*` slash command. There is no application code here — the repo is prompt engineering for site-building workflows.
 
+## Prerequisites
+
+To use these skills end-to-end, make sure you have:
+
+- Node.js and `npm`
+- The `skills` CLI if you want to install the local skill pack with `npx skills add .`
+- `gcloud` and the Firebase CLI authenticated on the machine for any workflow that touches Firebase or Google Analytics
+- A Google account that owns the Firebase and GA4 resources you want Claude to create or modify
+
 ## Installation
 
 ### Skills CLI
@@ -84,7 +93,7 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | `/senternet-site-gcloud-auth` | Authenticate gcloud and Firebase CLI (run once per machine before firebase/GA skills) |
 | `/senternet-site-design` | Convert a Claude Design HTML export into React components with a full design system |
 | `/senternet-site-vite-setup` | Scaffold Vite + React + TypeScript with optimal config |
-| `/senternet-site-firebase` | Firebase Hosting with caching, security headers, multi-env deploy — creates Firebase projects automatically |
+| `/senternet-site-firebase` | Firebase Hosting with caching, security headers, multi-env deploy — creates or links Firebase projects after auth and confirmation |
 | `/senternet-site-google-analytics` | GA4 with lazy loading and build-time env gating — creates GA4 property and retrieves Measurement ID automatically |
 | `/senternet-site-ads-reddit-pixel` | Reddit Ads conversion pixel with bootstrap stub |
 | `/senternet-site-metatags` | Full SEO meta tags, OG, Twitter Card, schema.org, MetaTags component |

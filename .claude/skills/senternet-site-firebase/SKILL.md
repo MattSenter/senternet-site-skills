@@ -10,6 +10,7 @@ Add Firebase Hosting to a Vite + React site with optimal caching, security heade
 ## Prerequisites
 
 Run `/senternet-site-gcloud-auth` first if you haven't authenticated this machine yet.
+Project creation only works when both `gcloud` and `firebase` are logged into the Google account that owns the target projects.
 
 ## Steps
 
@@ -51,6 +52,7 @@ firebase projects:list 2>/dev/null | grep "$PREFIX"
 ```
 
 Note which of `$PREFIX-dev` and `$PREFIX-prod` already exist so you don't try to recreate them.
+If `firebase projects:list` fails with an auth error or returns nothing because the CLI session expired, try `firebase login --reauth` first and then run `firebase projects:list` again. If that succeeds, continue. If it still fails, run `/senternet-site-gcloud-auth` and follow the Firebase reauth prompts there before continuing.
 
 ### 5. Create Firebase projects for selected environments
 
@@ -58,14 +60,17 @@ For **prod** (if it doesn't already exist):
 ```bash
 firebase projects:create $PREFIX-prod --display-name "$APP_NAME"
 ```
+Immediately confirm it shows up in `firebase projects:list`. If it does not, stop and report the failure instead of assuming the project was created.
 
 For **dev** (if selected and doesn't already exist) — ask the user whether to create it or skip creation (e.g. they'll create it manually or it already exists under a different account):
 ```bash
 # Only run if user confirms they want to create it
 firebase projects:create $PREFIX-dev --display-name "$APP_NAME Dev"
 ```
+Immediately confirm it shows up in `firebase projects:list`. If it does not, stop and report the failure instead of assuming the project was created.
 
 If creation fails with "project ID already taken", check if the user owns it via `firebase projects:list`. If they do, proceed — the project exists and we'll just reference it. If they don't own it, ask them to choose a different prefix.
+If creation fails because the Firebase session expired, run `firebase login --reauth`, re-run `firebase projects:list`, and only retry project creation after the reauth succeeds.
 
 ### 6. Write `firebase.json`
 

@@ -68,6 +68,13 @@ A browser window opens — sign in with the Google account that owns your Fireba
 
 **Windows (PowerShell):** If `--scopes` causes issues, run without it first to verify auth works, then re-run with the scopes flag.
 
+If gcloud credentials have expired, treat the same command as the reauth step:
+```bash
+gcloud auth login \
+  --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
+```
+If you are on a headless machine, add `--no-browser` so gcloud prints a URL or device-flow instructions instead of opening a browser. After the browser or device flow finishes, re-run `gcloud auth list` to confirm the active account is back.
+
 ### 4. Set up application default credentials
 
 ```bash
@@ -98,6 +105,16 @@ A browser window opens — sign in with the same Google account.
 
 **Linux (headless/SSH):** Use `firebase login --no-localhost` instead, which gives a URL to open on another machine.
 
+If Firebase CLI auth has expired, use reauth instead of a fresh login:
+```bash
+firebase login --reauth
+```
+If that opens a browser, sign in with the same Google account that owns the Firebase projects. If you are on a headless machine, use:
+```bash
+firebase login --reauth --no-localhost
+```
+When the CLI says the browser flow is complete, return to the terminal and re-run `firebase projects:list` to confirm the session is active.
+
 ### 7. Verify everything
 
 ```bash
@@ -116,6 +133,10 @@ gcloud auth login --scopes=openid,email,profile,https://www.googleapis.com/auth/
 gcloud auth application-default login --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
 firebase login --reauth
 ```
+
+If `gcloud auth list` stops showing an active account after an idle period, rerun `gcloud auth login` with the scopes above first. If that succeeds, continue; if it still fails, run the full reauthentication block.
+
+If `firebase projects:list` starts failing after an idle period, prefer `firebase login --reauth` first, then run `firebase projects:list` again. If that still fails, re-run the full authentication flow above.
 
 ## Notes
 
