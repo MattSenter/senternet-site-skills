@@ -29,7 +29,7 @@ Derive a prefix from the site name (lowercase, hyphens, strip trailing `-site`):
 # e.g. site name "myapp" → prefix "myapp"
 ```
 
-Show the user the derived prefix and ask them to confirm or override it before proceeding. This prefix is used as `$PREFIX-dev` and `$PREFIX-prod` for Firebase project IDs.
+Show the user the derived prefix and ask them to confirm or override it before proceeding. This prefix is used as `$PREFIX-dev` and `$PREFIX-prod` for Firebase project IDs. The Firebase project display name must always match the project ID exactly.
 
 ### 3. Determine which environments to set up
 
@@ -58,14 +58,14 @@ If `firebase projects:list` fails with an auth error or returns nothing because 
 
 For **prod** (if it doesn't already exist):
 ```bash
-firebase projects:create $PREFIX-prod --display-name "$APP_NAME"
+firebase projects:create $PREFIX-prod --display-name "$PREFIX-prod"
 ```
 Immediately confirm it shows up in `firebase projects:list`. If it does not, stop and report the failure instead of assuming the project was created.
 
 For **dev** (if selected and doesn't already exist) — ask the user whether to create it or skip creation (e.g. they'll create it manually or it already exists under a different account):
 ```bash
 # Only run if user confirms they want to create it
-firebase projects:create $PREFIX-dev --display-name "$APP_NAME Dev"
+firebase projects:create $PREFIX-dev --display-name "$PREFIX-dev"
 ```
 Immediately confirm it shows up in `firebase projects:list`. If it does not, stop and report the failure instead of assuming the project was created.
 
