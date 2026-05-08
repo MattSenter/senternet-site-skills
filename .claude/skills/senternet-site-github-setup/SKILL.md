@@ -1,3 +1,8 @@
+---
+name: senternet-site-github-setup
+description: Initialize git, .gitignore, and GitHub repo conventions for a new site.
+---
+
 # GitHub Setup
 
 Initialize a git repository, create a `.gitignore`, and establish a branching convention for a Vite + React + Firebase site. Safe to run on a fresh project or one that already has git initialized.
@@ -205,17 +210,24 @@ The MCP server lets Claude interact with GitHub's API without leaving the conver
 
 Tell the user:
 
-> 1. Go to **github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)**
-> 2. Click **"Generate new token (classic)"**
+> 1. Go to **github.com → Settings → Developer settings → Personal access tokens → Fine-grained tokens**
+> 2. Click **"Generate new token"**
 > 3. Give it a descriptive name (e.g. `claude-code-mcp`)
 > 4. Set expiration to 90 days or longer
-> 5. Select these scopes:
->    - `repo` — full repo access (read/write code, issues, PRs)
->    - `read:org` — read org membership
->    - `read:user` — read profile info
->    - `gist` — if you use gists
-> 6. Click **Generate token** and copy it — it won't be shown again
-> 7. Paste it here so I can add it to your Claude config
+> 5. Under **Resource owner**, select your account (or org if needed)
+> 6. Under **Repository access**, choose **All repositories** (or specific repos if you prefer)
+> 7. Under **Permissions**, grant:
+>    - **Repository permissions:**
+>      - Administration: Read and write *(required to create repositories)*
+>      - Contents: Read and write
+>      - Issues: Read and write
+>      - Pull requests: Read and write
+>      - Metadata: Read-only (required, auto-selected)
+>      - Commit statuses: Read and write
+>    - **Account permissions:**
+>      - Gists: Read and write (if you use gists)
+> 8. Click **Generate token** and copy it — it won't be shown again
+> 9. Paste it here so I can add it to your Claude config
 
 Wait for the user to provide the token before proceeding.
 

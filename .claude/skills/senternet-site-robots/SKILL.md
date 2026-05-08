@@ -1,3 +1,8 @@
+---
+name: senternet-site-robots
+description: Create robots.txt and point it at the sitemap.
+---
+
 # robots.txt Setup
 
 Create a `robots.txt` that allows all crawlers and points to the sitemap.

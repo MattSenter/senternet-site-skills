@@ -1,3 +1,8 @@
+---
+name: senternet-site-compare-pages
+description: Create competitor alternative and versus pages for SEO.
+---
+
 # Competitor Alternative / Compare Pages
 
 Create SEO-optimized "X alternative" and "X vs Y" pages to capture high-intent search traffic from users evaluating competitors.

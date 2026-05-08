@@ -1,3 +1,8 @@
+---
+name: senternet-site-firebase
+description: Set up Firebase Hosting, project IDs, headers, and deploy scripts.
+---
+
 # Firebase Hosting Setup
 
 Add Firebase Hosting to a Vite + React site with optimal caching, security headers, and multi-environment deployment. Can be run on a fresh project or re-run later to add a missing environment.

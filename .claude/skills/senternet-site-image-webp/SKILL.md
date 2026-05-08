@@ -1,3 +1,8 @@
+---
+name: senternet-site-image-webp
+description: Convert site images to WebP and wire up responsive image handling.
+---
+
 # Image Optimization: WebP Conversion
 
 Convert all site images to WebP format and use `.webp` everywhere — no PNG fallbacks, no `<picture>` elements.

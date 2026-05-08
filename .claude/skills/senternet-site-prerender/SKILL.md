@@ -1,3 +1,8 @@
+---
+name: senternet-site-prerender
+description: Add Puppeteer prerendering for all routes and strip runtime-only markup.
+---
+
 # Static Prerendering with Puppeteer
 
 Add Puppeteer-based static prerendering so every route produces a real HTML snapshot for SEO crawlers and social media link previews.

@@ -1,3 +1,8 @@
+---
+name: senternet-site-lighthouse
+description: Apply performance and Lighthouse optimization decisions to a marketing site.
+---
+
 # Lighthouse / PageSpeed Optimization
 
 Achieve Lighthouse scores of Performance ≥94, Accessibility ≥98, Best Practices ≥96, SEO 100 on mobile.

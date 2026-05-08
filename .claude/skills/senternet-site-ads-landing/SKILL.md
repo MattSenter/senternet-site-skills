@@ -1,3 +1,8 @@
+---
+name: senternet-site-ads-landing
+description: Create conversion-focused campaign landing pages for paid ads.
+---
+
 # Ad Landing Pages
 
 Create conversion-optimized landing pages for paid ad campaigns (Reddit, Google, Meta) with campaign-specific messaging and tracking.

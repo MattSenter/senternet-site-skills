@@ -1,3 +1,8 @@
+---
+name: senternet-site-vite-setup
+description: Scaffold a production-ready Vite + React + TypeScript site.
+---
+
 # Vite + React + TypeScript Site Setup
 
 Initialize a production-ready Vite + React + TypeScript project for a marketing site.

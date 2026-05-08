@@ -1,3 +1,8 @@
+---
+name: senternet-site-multilingual
+description: Add URL-based multilingual support with prerendering and hreflang.
+---
+
 # Multilingual / i18n Support
 
 Add multi-language support with URL-based routing (`/es/`, `/fr/`), hreflang tags, localized prerendering, and Firebase Hosting i18n.

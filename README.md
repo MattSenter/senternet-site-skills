@@ -6,9 +6,17 @@ Each skill in `.claude/skills/` is a directory containing `SKILL.md` and becomes
 
 ## Installation
 
+### Skills CLI
+
+If you have the `skills` CLI installed, you can install the local skills in this repo directly from the repository root:
+
+```bash
+npx skills add .
+```
+
 ### Global (all projects)
 
-Copy the skill directories to both `~/.claude/skills/` (Claude Code) and `~/.agents/skills/` (Agents SDK and other runtimes):
+Copy the skill directories to `~/.claude/skills/` (Claude Code). If you also use the Agents SDK or another runtime that reads `~/.agents/skills/`, mirror them there too:
 
 ```bash
 cp -r .claude/skills/senternet-* ~/.claude/skills/

@@ -1,3 +1,8 @@
+---
+name: senternet-site-metatags
+description: Add SEO meta tags, social cards, and schema markup.
+---
+
 # SEO Meta Tags Setup
 
 Add comprehensive SEO meta tags, Open Graph, Twitter Card, schema.org structured data, and a reusable `MetaTags` React component.

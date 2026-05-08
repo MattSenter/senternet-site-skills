@@ -1,3 +1,8 @@
+---
+name: senternet-site-share-images
+description: Generate per-page Open Graph share images.
+---
+
 # Per-Page OG Share Image Generation
 
 Generate 1200x630 Open Graph / Twitter Card share images for every page using Sharp and SVG composition. No Figma or external tools needed.

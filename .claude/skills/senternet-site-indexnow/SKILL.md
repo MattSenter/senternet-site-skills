@@ -1,3 +1,8 @@
+---
+name: senternet-site-indexnow
+description: Generate an IndexNow key and submission script for production deploys.
+---
+
 # IndexNow Setup (Bing / Search Engine Indexing)
 
 Submit all site URLs to Bing and other search engines via IndexNow immediately after each production deploy.

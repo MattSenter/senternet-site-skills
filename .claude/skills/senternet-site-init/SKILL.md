@@ -1,3 +1,8 @@
+---
+name: senternet-site-init
+description: Generate AGENTS.md, CLAUDE.md, and README.md for a completed site.
+---
+
 # Initialize Project Documentation
 
 Generate project documentation for the completed site. Produces three files:

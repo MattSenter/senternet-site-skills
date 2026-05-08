@@ -1,3 +1,8 @@
+---
+name: senternet-site-csp
+description: Add a Content Security Policy for Senternet marketing sites.
+---
+
 # Content Security Policy (CSP) Setup
 
 Add a `Content-Security-Policy` header to Firebase Hosting that locks down which scripts, styles, and connections the site is allowed to make. Covers all services in the Senternet skill suite (GA4, Reddit Pixel, Firebase).

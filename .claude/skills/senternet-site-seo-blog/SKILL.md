@@ -1,3 +1,8 @@
+---
+name: senternet-site-seo-blog
+description: Add a prerendered SEO blog with posts and tag pages.
+---
+
 # SEO Blog
 
 Add an SEO-optimized blog section to drive organic search traffic. Each post gets its own prerendered route, sitemap entry, and share image.

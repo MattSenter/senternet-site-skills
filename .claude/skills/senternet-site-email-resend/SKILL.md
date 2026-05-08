@@ -1,3 +1,8 @@
+---
+name: senternet-site-email-resend
+description: Wire up Resend email sending through Firebase Functions.
+---
+
 # Email Sending via Resend
 
 Add transactional email to a site using Resend + Firebase Cloud Functions v2. Stores the API key securely in Firebase Secret Manager, grants the correct service account permissions, and scaffolds a Cloud Function. Can be Firestore-triggered (fires when a document is created) or HTTP callable.

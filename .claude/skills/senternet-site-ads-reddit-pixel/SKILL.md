@@ -1,3 +1,8 @@
+---
+name: senternet-site-ads-reddit-pixel
+description: Install the Reddit conversion pixel with build-time gating.
+---
+
 # Reddit Pixel Setup
 
 Add the Reddit Ads conversion pixel for tracking installs and page visits from Reddit ad campaigns.

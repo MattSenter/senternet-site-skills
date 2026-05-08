@@ -1,3 +1,8 @@
+---
+name: senternet-site-google-analytics
+description: Add GA4 with build-time env gating and lazy loading.
+---
+
 # Google Analytics (GA4) Setup
 
 Add GA4 to a Vite + React site with lazy loading, environment gating, and no render-blocking. Automatically creates a GA4 property and retrieves the Measurement ID via the Analytics Admin API.

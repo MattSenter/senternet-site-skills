@@ -1,3 +1,8 @@
+---
+name: senternet-site-gcloud-auth
+description: Authenticate gcloud and Firebase CLI for site setup.
+---
+
 # Google Cloud & Firebase CLI Authentication
 
 Authenticate the Google Cloud SDK and Firebase CLI so Claude can create Firebase projects and GA4 properties on your behalf. Run this once per machine before using any skill that touches Firebase or Google Analytics.

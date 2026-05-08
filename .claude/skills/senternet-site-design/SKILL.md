@@ -1,3 +1,8 @@
+---
+name: senternet-site-design
+description: Convert a Claude Design export into React components and a design system.
+---
+
 # Site Design — Convert Claude Design Export to React Components
 
 Take a Claude Design HTML export (or design from scratch) and implement it as a production-ready Vite + React + TypeScript codebase.

@@ -1,3 +1,8 @@
+---
+name: senternet-site-mobile-optimize
+description: Optimize hero images, loading, and motion for mobile.
+---
+
 # Mobile View Optimization
 
 Optimize mobile page load by eliminating images that get visually hidden by content on small screens, and applying mobile-specific performance patterns.

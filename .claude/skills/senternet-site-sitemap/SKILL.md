@@ -1,3 +1,8 @@
+---
+name: senternet-site-sitemap
+description: Generate sitemap.xml from site routes and keep it wired into build and deploy workflows.
+---
+
 # Sitemap Generation
 
 Generate a `sitemap.xml` from a route list, with optional multilingual `hreflang` support, and wire it into the build pipeline.
