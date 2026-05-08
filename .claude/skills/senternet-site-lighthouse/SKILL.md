@@ -11,12 +11,15 @@ Achieve Lighthouse scores of Performance ≥94, Accessibility ≥98, Best Practi
 
 Use the PageSpeed Insights API directly (avoids browser caching noise).
 
+If the site already has a Firebase project, use that project ID for the PSI key work so the `gcloud` commands stay scoped to the current site. All project-specific `gcloud` commands here should include `--project "$PROJECT_ID"`.
+
 ### Step 1 — Get a PSI API key
 
 **Auto-create with gcloud (preferred):** Run this to enable the API and create a key restricted to PageSpeed Insights:
 ```bash
-gcloud services enable pagespeedonline.googleapis.com && \
+gcloud services enable pagespeedonline.googleapis.com --project "$PROJECT_ID" && \
 PSI_KEY=$(gcloud alpha services api-keys create \
+  --project "$PROJECT_ID" \
   --display-name="PageSpeed Insights" \
   --api-target=service=pagespeedonline.googleapis.com \
   --format="value(keyString)" 2>/dev/null) && \

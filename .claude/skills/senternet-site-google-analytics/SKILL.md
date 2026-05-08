@@ -5,11 +5,13 @@ description: Add GA4 with build-time env gating and lazy loading.
 
 # Google Analytics (GA4) Setup
 
-Add GA4 to a Vite + React site with lazy loading, environment gating, and no render-blocking. Automatically creates a GA4 property and retrieves the Measurement ID via the Analytics Admin API.
+Add GA4 to a Vite + React site with lazy loading, environment gating, and no render-blocking. Automatically links the Firebase project to Google Analytics, creates or reuses a GA4 property, and retrieves the Measurement ID via the Analytics Admin API.
 
 ## Prerequisites
 
-Run `/senternet-site-gcloud-auth` first if you haven't authenticated this machine yet (requires the `analytics.edit` scope).
+Run `/senternet-site-gcloud-auth` first if you haven't authenticated this machine yet (requires the `analytics.edit` scope). The auth skill should try the browser-based Google login flow on behalf of the user before asking them to do anything manually; only fall back to an explicit command if that browser flow cannot complete in this environment.
+
+If the site already has a Firebase project, make sure the Firebase project is linked to Google Analytics before wiring the Measurement ID. An unlinked Firebase project will still show "Get started" in the console even if the website code is sending GA hits.
 
 ## Design principles
 
@@ -20,16 +22,63 @@ Run `/senternet-site-gcloud-auth` first if you haven't authenticated this machin
 
 ## Steps
 
-### 1. Get a GA4 Measurement ID via the Analytics Admin API
+### 1. Link the Firebase project to Google Analytics
+
+If the Firebase project is not yet linked, use the Firebase Management API to enable Analytics for the project first.
+
+**Step 1a — Check whether Analytics is already linked:**
+```bash
+node .claude/skills/senternet-site-google-analytics/scripts/check-firebase-analytics.mjs --project PROJECT_ID
+```
+
+The helper prints the exact Firebase project ID it checked. If it reports `Firebase Analytics link: linked`, stop here and continue to step 2. If it reports `Firebase Analytics link: not linked` or exits with code `2`, continue to step 1b.
+
+**Step 1b — Link the Firebase project to an existing GA account:**
+```bash
+TOKEN=$(gcloud auth print-access-token)
+curl -s -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "analyticsAccountId": "ACCOUNT_ID"
+  }' \
+  "https://firebase.googleapis.com/v1beta1/projects/PROJECT_ID:addGoogleAnalytics" | python3 -m json.tool
+```
+
+Use the Google Analytics account that should own the site's property. If the project already has a linked property and the user wants to keep it, do not call this endpoint again with a different property ID.
+
+Poll the returned `Operation` with `operations.get` until `done` is `true` if Firebase reports the link as still provisioning.
+
+If the call fails with `403`, re-run `/senternet-site-gcloud-auth` and confirm the Google account has Owner access to the Firebase project and Edit access to the GA account.
+
+If the project is still unlinked or auth is missing, do not stop at a generic handoff. Attempt the browser-based auth flow immediately, then retry the link check:
+```bash
+gcloud auth login \
+  --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
+
+gcloud auth application-default login \
+  --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
+
+firebase login --reauth
+```
+
+If the browser flow fails because the environment cannot open a browser or complete interactive auth, show the user the exact command to run next. For headless sessions, use:
+```bash
+gcloud auth login --no-browser --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
+gcloud auth application-default login --no-browser --scopes=openid,email,profile,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.edit,https://www.googleapis.com/auth/analytics
+firebase login --reauth --no-localhost
+```
+
+### 2. Get a GA4 Measurement ID via the Analytics Admin API
 
 Run the following to retrieve or create a GA4 property and get the Measurement ID:
 
-**Step 1a — Get an access token:**
+**Step 2a — Get an access token:**
 ```bash
 TOKEN=$(gcloud auth print-access-token)
 ```
 
-**Step 1b — List GA accounts to find your account ID:**
+**Step 2b — List GA accounts to find your account ID:**
 ```bash
 curl -s -H "Authorization: Bearer $TOKEN" \
   "https://analyticsadmin.googleapis.com/v1beta/accounts" | python3 -m json.tool
@@ -37,15 +86,15 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 The response lists your GA accounts. Note the `name` field (e.g. `accounts/123456`). If there's only one account, use it automatically. If there are multiple, show the list and ask the user which account to use.
 
-**Step 1c — Check if a property already exists for this domain:**
+**Step 2c — Check if a property already exists for this domain:**
 ```bash
 curl -s -H "Authorization: Bearer $TOKEN" \
   "https://analyticsadmin.googleapis.com/v1beta/properties?filter=parent:accounts/ACCOUNT_ID" | python3 -m json.tool
 ```
 
-If a property matching the site's domain exists, use it (skip to step 1e). If not, create one.
+If a property matching the site's domain exists, use it (skip to step 2e). If not, create one.
 
-**Step 1d — Create a new GA4 property:**
+**Step 2d — Create a new GA4 property:**
 ```bash
 curl -s -X POST \
   -H "Authorization: Bearer $TOKEN" \
@@ -62,7 +111,7 @@ curl -s -X POST \
 
 Note the `name` field from the response (e.g. `properties/789012`).
 
-**Step 1e — Create a web data stream to get the Measurement ID:**
+**Step 2e — Create a web data stream to get the Measurement ID:**
 ```bash
 MEASUREMENT_ID=$(curl -s -X POST \
   -H "Authorization: Bearer $TOKEN" \
@@ -80,11 +129,11 @@ MEASUREMENT_ID=$(curl -s -X POST \
 echo "Measurement ID: $MEASUREMENT_ID"
 ```
 
-If any step fails with a 403, the token is missing the analytics scope. Run `/senternet-site-gcloud-auth` again — it re-auths with the required scopes.
+If any step fails with a 403, the token is missing the analytics scope. Run `/senternet-site-gcloud-auth` again, and try the browser-based auth commands above before telling the user they need to intervene.
 
 If the user already has a Measurement ID they want to use, accept it and skip the API steps above.
 
-### 2. Add the GA block to `index.html`
+### 3. Add the GA block to `index.html`
 
 Insert between comment markers so the Vite plugin can substitute or strip it:
 
@@ -108,7 +157,7 @@ Insert between comment markers so the Vite plugin can substitute or strip it:
 
 The literal string `GA_MEASUREMENT_ID` is replaced at build time by the Vite plugin below.
 
-### 3. Add the `htmlPlugin` to `vite.config.ts`
+### 4. Add the `htmlPlugin` to `vite.config.ts`
 
 ```typescript
 const htmlPlugin = (gaId: string): Plugin => ({
@@ -125,7 +174,7 @@ const htmlPlugin = (gaId: string): Plugin => ({
 });
 ```
 
-### 4. Set `VITE_GA_ID` in env files
+### 5. Set `VITE_GA_ID` in env files
 
 ```bash
 # .env.development — GA disabled in dev
@@ -135,7 +184,7 @@ VITE_GA_ID=
 VITE_GA_ID=G-XXXXXXXXXX
 ```
 
-### 5. Strip GA script from prerendered HTML
+### 6. Strip GA script from prerendered HTML
 
 In `scripts/prerender.mjs`, strip the GA `<script>` tag so it isn't double-loaded when the hydrated app adds it:
 
@@ -146,7 +195,7 @@ html = html.replace(
 );
 ```
 
-### 6. Add GA event tracking helper
+### 7. Add GA event tracking helper
 
 ```typescript
 // src/lib/analytics.ts
@@ -157,7 +206,7 @@ export function trackEvent(eventName: string, params?: Record<string, unknown>) 
 }
 ```
 
-### 7. Add gtag type declaration
+### 8. Add gtag type declaration
 
 In `src/vite-env.d.ts`:
 ```typescript

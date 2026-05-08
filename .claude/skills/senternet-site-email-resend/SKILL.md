@@ -46,7 +46,7 @@ gcloud services enable \
   artifactregistry.googleapis.com \
   run.googleapis.com \
   eventarc.googleapis.com \
-  --project $PROJECT_ID
+  --project "$PROJECT_ID"
 ```
 
 This is idempotent — already-enabled APIs are skipped automatically.
@@ -54,7 +54,7 @@ This is idempotent — already-enabled APIs are skipped automatically.
 ### 4. Store the Resend API key in Firebase Secret Manager
 
 ```bash
-firebase functions:secrets:set RESEND_API_KEY --project $PROJECT_ID
+firebase functions:secrets:set RESEND_API_KEY --project "$PROJECT_ID"
 ```
 
 Firebase will prompt the user to paste the key. It is stored server-side and never touches the repo.
@@ -64,9 +64,10 @@ Firebase will prompt the user to paste the key. It is stored server-side and nev
 Firebase Functions v2 runs under the project's default compute service account. Grant it the `secretAccessor` role so it can read `RESEND_API_KEY` at runtime:
 
 ```bash
-PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
+PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --project "$PROJECT_ID" --format='value(projectNumber)')
 
-gcloud projects add-iam-policy-binding $PROJECT_ID \
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --project "$PROJECT_ID" \
   --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor"
 ```
@@ -303,13 +304,13 @@ functions/node_modules/
 ### 11. Deploy and verify
 
 ```bash
-firebase deploy --only functions --project $PROJECT_ID
+firebase deploy --only functions --project "$PROJECT_ID"
 ```
 
 After deploy succeeds, tell the user to trigger the function (create a Firestore document in the collection, or call the HTTP endpoint) and then check the logs:
 
 ```bash
-gcloud functions logs read --project $PROJECT_ID --limit 20
+gcloud functions logs read --project "$PROJECT_ID" --limit 20
 ```
 
 A successful notification will show no errors in the logs. If there is a `403 Forbidden` from Secret Manager, recheck step 5.

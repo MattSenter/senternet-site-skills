@@ -78,7 +78,7 @@ In `package.json`, the `deploy:prod` script should run IndexNow after Firebase d
 ```json
 {
   "scripts": {
-    "deploy:prod": "npm run build:prod && firebase deploy --only hosting --project APPNAME-prod && node scripts/indexnow.mjs",
+    "deploy:prod": "npm run build:prod && firebase deploy --only hosting --project \"APPNAME-prod\" && node scripts/indexnow.mjs",
     "indexnow": "node scripts/indexnow.mjs"
   }
 }

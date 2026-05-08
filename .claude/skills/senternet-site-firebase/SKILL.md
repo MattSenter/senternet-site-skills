@@ -11,6 +11,7 @@ Add Firebase Hosting to a Vite + React site with optimal caching, security heade
 
 Run `/senternet-site-gcloud-auth` first if you haven't authenticated this machine yet.
 Project creation only works when both `gcloud` and `firebase` are logged into the Google account that owns the target projects.
+When you run project-specific `gcloud` or `firebase` commands in this workflow, always include `--project` with the exact project ID you are modifying. The auth/list commands are account-scoped exceptions.
 
 ## Steps
 
@@ -73,6 +74,8 @@ Immediately confirm it shows up in `firebase projects:list`. If it does not, sto
 
 If creation fails with "project ID already taken", check if the user owns it via `firebase projects:list`. If they do, proceed — the project exists and we'll just reference it. If they don't own it, ask them to choose a different prefix.
 If creation fails because the Firebase session expired, run `firebase login --reauth`, re-run `firebase projects:list`, and only retry project creation after the reauth succeeds.
+
+After the Firebase project exists, resolve the production project ID from `.firebaserc` and run `node .claude/skills/senternet-site-google-analytics/scripts/check-firebase-analytics.mjs --project PROJECT_ID` against that exact project. If it reports `Firebase Analytics link: not linked`, run `/senternet-site-google-analytics` and let that skill attempt the browser-based Google auth flow on your behalf before telling the user to do anything manually. Re-check until the helper reports `linked`.
 
 ### 6. Write `firebase.json`
 
@@ -152,12 +155,12 @@ Write only the environments that have been set up (now or previously):
 
 **Prod deploy script** (always add):
 ```json
-"deploy:prod": "npm run build:prod && firebase deploy --only hosting --project $PREFIX-prod && node scripts/indexnow.mjs"
+"deploy:prod": "npm run build:prod && firebase deploy --only hosting --project \"$PREFIX-prod\" && node scripts/indexnow.mjs"
 ```
 
 **Dev deploy script** (only if dev environment was set up):
 ```json
-"deploy:dev": "npm run build:dev && firebase deploy --only hosting --project $PREFIX-dev"
+"deploy:dev": "npm run build:dev && firebase deploy --only hosting --project \"$PREFIX-dev\""
 ```
 
 Note: The `&& node scripts/indexnow.mjs` tail on `deploy:prod` is only added if `scripts/indexnow.mjs` exists. Skip it otherwise.

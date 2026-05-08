@@ -86,6 +86,7 @@ In upfit mode, include GitHub setup in the same feature inventory so the user ca
 - If the machine is headless or browser launch fails, add `--no-browser` so gcloud prints device-flow instructions, then wait for the user to complete the browser/device step and re-run `gcloud auth list`
 - Run `firebase projects:list` — if it succeeds, skip firebase login
 - If `firebase projects:list` fails because the Firebase session expired or no active Firebase account is available, run `firebase login --reauth` first, then re-run `firebase projects:list` before falling back to full auth
+- Auth checks are account-scoped; all project-specific `gcloud` and `firebase` commands later in the workflow must include `--project "$PROJECT_ID"` (or the current `$PREFIX-dev` / `$PREFIX-prod` project).
 
 Execute `/senternet-site-gcloud-auth` for any missing auth.
 
@@ -197,8 +198,15 @@ Execute `/senternet-site-indexnow` for any missing pieces.
 - `index.html` contains `<!-- GA_START -->` comment marker → GA block already present
 - `.env.production` contains `VITE_GA_ID` → skip env var setup
 - `vite.config.ts` has `htmlPlugin` handling GA injection → skip plugin verification
+- `.firebaserc` contains a production project ID → use that project ID for the Analytics link check
+- `node .claude/skills/senternet-site-google-analytics/scripts/check-firebase-analytics.mjs --project PROJECT_ID` reports `Firebase Analytics link: linked` → skip Firebase Analytics linking
+- The helper reports `Firebase Analytics link: not linked` or exits `2` → the Firebase project is not linked yet, even if the GA block is already present, so run `/senternet-site-google-analytics`
 
-Execute `/senternet-site-google-analytics` for any missing pieces.
+Execution rule:
+- Resolve the production Firebase project ID first. Prefer `.firebaserc` default, then `.firebaserc` `prod`, then `firebase projects:list` if needed.
+- Run the helper against that exact production project ID before deciding GA is complete.
+- If the helper says `not linked`, run the Firebase Analytics link flow immediately and re-run the helper until it says `linked`.
+- Do not stop at the front-end GA markers. The step is not complete until the Firebase project itself is linked.
 
 ### Step 10: Transactional Email via Resend *(optional — for forms, notifications, or onboarding)*
 
