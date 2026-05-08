@@ -2,42 +2,39 @@
 
 Claude Code slash commands for spinning up production-ready marketing sites.
 
-Each `.md` file in `.claude/skills/` becomes a `/senternet-*` slash command. There is no application code here — the repo is prompt engineering for site-building workflows.
+Each skill in `.claude/skills/` is a directory containing `SKILL.md` and becomes a `/senternet-*` slash command. There is no application code here — the repo is prompt engineering for site-building workflows.
 
 ## Installation
 
-### Local (per-project)
+### Global (all projects)
 
-Copy or symlink the commands directory into any site project:
+Copy the skill directories to `~/.claude/skills/`:
+
+```bash
+cp -r .claude/skills/senternet-* ~/.claude/skills/
+```
+
+Skills are then available as slash commands in any Claude Code session.
+
+To keep them in sync going forward, symlink each skill directory instead of copying:
+
+```bash
+for dir in .claude/skills/senternet-*/; do
+  ln -sf "$(pwd)/$dir" ~/.claude/skills/$(basename "$dir")
+done
+```
+
+### Local (per-project only)
+
+Copy or symlink into the target project's `.claude/skills/` directory:
 
 ```bash
 # Copy
-cp -r /path/to/senternet-site-skills/.claude/skills /your-project/.claude/skills
+cp -r /path/to/senternet-site-skills/.claude/skills/senternet-* /your-project/.claude/skills/
 
 # Or symlink
-ln -s /path/to/senternet-site-skills/.claude/skills /your-project/.claude/skills
-```
-
-Skills are then available as slash commands when Claude Code is run inside that project.
-
-### Global (all projects, all agent types)
-
-Skills must be installed in two locations to work with both Claude Code and other agent runtimes:
-
-```bash
-# Claude Code CLI
-cp .claude/skills/* ~/.claude/skills/
-
-# Agent runtimes (Agents SDK, etc.)
-cp .claude/skills/* ~/.agents/skills/
-```
-
-To keep them in sync going forward, symlink the source instead of copying:
-
-```bash
-for f in .claude/skills/*; do
-  ln -sf "$(pwd)/$f" ~/.claude/skills/$(basename $f)
-  ln -sf "$(pwd)/$f" ~/.agents/skills/$(basename $f)
+for dir in /path/to/senternet-site-skills/.claude/skills/senternet-*/; do
+  ln -sf "$dir" /your-project/.claude/skills/$(basename "$dir")
 done
 ```
 
@@ -49,7 +46,7 @@ done
 /senternet-create-site
 ```
 
-Claude will ask for your app name, domain, brand color, and other basics, then execute all skills in sequence across these phases:
+Claude will ask for your app name, domain, design export (zip/directory/HTML from Claude Design), and other basics. The primary brand color is detected automatically from the design's CSS variables. It then executes all skills in sequence across these phases:
 
 1. **Prerequisites** — gcloud/Firebase auth
 2. **Phase 1** — Vite scaffold, design system, Firebase Hosting
@@ -107,9 +104,9 @@ Missing any one means the page has no static HTML for crawlers, no sitemap entry
 
 ## Adding a skill
 
-1. Create `.claude/skills/senternet-site-<feature>.md`
+1. Create `.claude/skills/senternet-site-<feature>/SKILL.md`
 2. Add a row to the table above
-3. If it belongs in the full site setup, add its execution step to `senternet-create-site.md` in the correct phase order
+3. If it belongs in the full site setup, add its execution step to `senternet-create-site/SKILL.md` in the correct phase order
 
 ## Target Lighthouse scores (mobile)
 

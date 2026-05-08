@@ -12,9 +12,15 @@ Claude Design outputs a single self-contained HTML file with inline CSS and vani
 
 ## Step 1 — Get the design source
 
-Ask the user: "Do you have a Claude Design HTML export? If so, provide the path or paste the file contents. Otherwise, describe the brand (colors, fonts, tone) and I'll generate a design system from scratch."
+Ask the user: "Do you have a Claude Design export? Provide the path to the zip file, exported directory, or HTML file. Otherwise, describe the brand (colors, fonts, tone) and I'll generate a design system from scratch."
 
-If they have an export, read the file. Everything below assumes you've read it.
+If they provide a **zip file**: run `unzip -o <path> -d <path-without-extension>` to extract it, then locate the `index.html` (or the only `.html` file) inside the extracted directory.
+
+If they provide a **directory**: look for `index.html` at its root, or the only `.html` file present.
+
+If they provide a **single HTML file**: read it directly.
+
+Everything below assumes you've read the HTML file.
 
 ## Step 2 — Extract the design system
 
@@ -39,6 +45,8 @@ a { color: inherit; text-decoration: none; }
 ```
 
 Import this file at the top of `src/index.css` (before the Tailwind import or replacing it if the design uses custom CSS instead of Tailwind).
+
+**Detect the primary brand color.** After writing `design-system.css`, scan the CSS variables you extracted for the primary/accent color. Look for variables named `--primary`, `--accent`, `--color-primary`, `--brand`, `--highlight`, `--cta`, or any variable whose value is used on the most prominent button or hero element. If multiple candidates exist, pick the one used on the main CTA button or the most visually dominant non-neutral color. Record it (e.g. `PRIMARY_COLOR=#00d4ff`) — this value will be passed to later skills (meta tags `theme-color`, share image background, etc.). If the design has no obvious primary color, ask the user to confirm which CSS variable or hex value to treat as the brand color.
 
 ## Step 3 — Add fonts (prefer self-hosted)
 
@@ -205,7 +213,14 @@ Call it in the nav `onClick` handlers.
 
 ## Step 9 — Copy images from the export
 
-Images referenced in the HTML export (e.g. `images/hero.jpeg`, `images/logo.png`) need to be in `public/images/` in the Vite project. Tell the user:
+Images referenced in the HTML export (e.g. `images/hero.jpeg`, `images/logo.png`) need to be in `public/images/` in the Vite project.
+
+If the user provided a zip or directory, the images are already on disk in the extracted folder. Run:
+```bash
+cp -r <extracted-dir>/images/* public/images/
+```
+
+Otherwise tell the user:
 
 > "Copy the images from the Claude Design export's `images/` folder to `public/images/` in this project."
 

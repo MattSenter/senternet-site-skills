@@ -4,15 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-A collection of Claude Code slash commands (`.claude/skills/*.md`) for spinning up production-ready marketing sites. Each `.md` file becomes a `/senternet-*` slash command. There is no application code here — the entire repo is prompt engineering for site-building workflows.
+A collection of Claude Code slash commands (`.claude/skills/*/SKILL.md`) for spinning up production-ready marketing sites. Each skill directory becomes a `/senternet-*` slash command. There is no application code here — the entire repo is prompt engineering for site-building workflows.
 
 ## Adding or editing a skill
 
-Skill files live in `.claude/skills/` and follow the naming convention `senternet-site-<feature>.md` (or `senternet-create-site.md` for the orchestrator). To add a new skill:
+Skills live in `.claude/skills/` as directories containing `SKILL.md`, following the naming convention `senternet-site-<feature>/SKILL.md` (or `senternet-create-site/SKILL.md` for the orchestrator). To add a new skill:
 
-1. Create `.claude/skills/senternet-site-<feature>.md`
+1. Create `.claude/skills/senternet-site-<feature>/SKILL.md`
 2. Add it to the table in `README.md`
-3. If it's a phase in the full site setup, add its execution step to `senternet-create-site.md` in the correct phase order
+3. If it's a phase in the full site setup, add its execution step to `senternet-create-site/SKILL.md` in the correct phase order
 
 ## Architecture of a generated site
 

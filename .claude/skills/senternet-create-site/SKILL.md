@@ -6,7 +6,7 @@ Before starting, ask the user for:
 1. **Site name** (e.g. `myapp-site`) — used as the directory name
 2. **App/product name** (e.g. `MyApp`) — used in copy, meta tags, schema.org
 3. **Domain** (e.g. `www.myapp.com`) — used in canonical URLs, sitemap, IndexNow
-4. **Primary brand color** (hex, e.g. `#00d4ff`) — used in theme-color, share images
+4. **Design export** — path to the zip file, directory, or HTML file exported from Claude Design (or another design tool). The primary brand color will be detected automatically from the design's CSS variables.
 5. **App Store URL** (if iOS app, e.g. `https://apps.apple.com/app/...`) — used in CTA links
 6. **Twitter/X handle** (e.g. `@MyAppHQ`) — used in Twitter Card meta tags
 7. **Multilingual?** (yes/no) — whether to add Spanish (`/es/`) support
