@@ -71,28 +71,28 @@ export function LandingPage({ headline, body, ctaText, ctaUrl, badge, metaTitle,
 // src/components/LandingPages.tsx
 import { LandingPage } from './LandingPage';
 
-export function RedditProLanding() {
+export function RedditCampaignLanding() {
   return (
     <LandingPage
-      headline="Your Portfolio as a Podcast"
-      body="StockCar turns your stocks, crypto, and indices into a personalized AI audio briefing. No account needed."
-      ctaText="Download Free on iPhone"
-      ctaUrl="https://apps.apple.com/app/..."
-      metaTitle="StockCar - Portfolio Podcast App"
-      metaDescription="Turn your portfolio into an AI podcast. Free on iPhone."
+      headline="[Your Core Value Proposition]"
+      body="APPNAME helps you [key benefit]. No account needed."
+      ctaText="Try It Free"
+      ctaUrl="https://www.DOMAIN.com/signup"
+      metaTitle="APPNAME - [Short Value Prop]"
+      metaDescription="[150-char description of what APPNAME does and why to try it]"
     />
   );
 }
 
-export function CommuteLanding() {
+export function RetargetingLanding() {
   return (
     <LandingPage
-      headline="Beat Traffic With Your Portfolio Update"
-      body="Get a 2-minute AI podcast about your stocks every morning commute. Pre-market, after-hours, 24/7 crypto."
-      ctaText="Download Free"
-      ctaUrl="https://apps.apple.com/app/..."
-      metaTitle="StockCar - Commute Portfolio Podcast"
-      metaDescription="Your morning commute's new co-pilot. AI stock updates, hands-free."
+      headline="[Objection-handling or urgency headline]"
+      body="[Reinforce the benefit. Address the hesitation from the first visit.]"
+      ctaText="Get Started"
+      ctaUrl="https://www.DOMAIN.com/signup"
+      metaTitle="APPNAME - [Campaign-Specific Title]"
+      metaDescription="[Alternate description targeting this audience segment]"
     />
   );
 }
@@ -101,8 +101,8 @@ export function CommuteLanding() {
 ### 3. Add landing routes to `src/App.tsx`
 
 ```tsx
-<Route path="/landing/reddit-pro" element={<RedditProLanding />} />
-<Route path="/landing/commute" element={<CommuteLanding />} />
+<Route path="/landing/reddit" element={<RedditCampaignLanding />} />
+<Route path="/landing/retargeting" element={<RetargetingLanding />} />
 <Route path="/landing/betalist" element={<BetaListLanding />} />
 ```
 
@@ -112,8 +112,8 @@ export function CommuteLanding() {
 const ROUTES = [
   '/',
   // ... other routes
-  '/landing/reddit-pro',
-  '/landing/commute',
+  '/landing/reddit',
+  '/landing/retargeting',
   '/landing/betalist',
 ];
 ```

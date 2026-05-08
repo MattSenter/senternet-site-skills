@@ -1,6 +1,6 @@
 # Create a Complete Optimized Marketing Site
 
-Spin up a fully optimized Senternet marketing site from scratch by executing all site skills in sequence.
+Spin up a fully optimized marketing site from scratch by executing all site skills in sequence.
 
 Before starting, ask the user for:
 1. **Site name** (e.g. `myapp-site`) — used as the directory name
@@ -8,19 +8,39 @@ Before starting, ask the user for:
 3. **Domain** (e.g. `www.myapp.com`) — used in canonical URLs, sitemap, IndexNow
 4. **Primary brand color** (hex, e.g. `#00d4ff`) — used in theme-color, share images
 5. **App Store URL** (if iOS app, e.g. `https://apps.apple.com/app/...`) — used in CTA links
-6. **Firebase project prefix** (e.g. `myapp`) — used in `.firebaserc` and deploy scripts
-7. **GA4 Measurement ID** (e.g. `G-XXXXXXXXXX`) — used in `.env.production`
-8. **Twitter/X handle** (e.g. `@MyAppHQ`) — used in Twitter Card meta tags
-9. **Multilingual?** (yes/no) — whether to add Spanish (`/es/`) support
+6. **Twitter/X handle** (e.g. `@MyAppHQ`) — used in Twitter Card meta tags
+7. **Multilingual?** (yes/no) — whether to add Spanish (`/es/`) support
 
 Then execute these skills in order. Each builds on the previous.
+
+---
+
+## Prerequisite: GitHub Setup *(optional)*
+
+Execute `/senternet-site-github-setup`:
+- Run `git init` in the new project directory
+- Create `.gitignore` covering env files, credentials, build output, editor dirs, and OS files
+- Optionally create an initial commit and a GitHub remote
+
+Ask the user: "Do you want to set up a git repo and GitHub remote now?" If no, skip this step — it can be run later.
+
+---
+
+## Prerequisite: Google Cloud & Firebase Authentication
+
+Execute `/senternet-site-gcloud-auth`:
+- Check if `gcloud` and `firebase` CLIs are installed; install if missing
+- Authenticate with Google Cloud (including analytics scope) and Firebase CLI
+- Verify with `gcloud auth list` and `firebase projects:list`
+
+Skip this step if the user has already run it on this machine in a prior session.
 
 ---
 
 ## Phase 1: Project Foundation
 
 ### Step 1: Vite + React Setup
-Execute `/site-vite-setup`:
+Execute `/senternet-site-vite-setup`:
 - Scaffold Vite + React + TypeScript project in a new directory named `$SITE_NAME`
 - Configure `vite.config.ts` with the `htmlPlugin` (GA injection + URL rewriting + modulepreload)
 - Set `outDir: 'build'`
@@ -28,35 +48,45 @@ Execute `/site-vite-setup`:
 - Set up `hydrateRoot` in `main.tsx` with `app-ready` event dispatch
 - Create `.env.development` and `.env.production`
 
-### Step 2: Firebase Hosting
-Execute `/site-firebase`:
+### Step 2: Site Design
+Execute `/senternet-site-design`:
+- Ask the user if they have a Claude Design HTML export; if yes, read the file
+- Extract the design system (CSS variables, fonts) into `src/styles/design-system.css`
+- Convert each HTML section into a typed React component under `src/pages/` and `src/components/`
+- Implement the `useScrollReveal` hook if the design uses scroll animations
+- Copy images from the export into `public/images/`
+- Wire up `src/App.tsx` with the home page route
+- Run `npm run dev` and ask the user to verify visually
+
+### Step 3: Firebase Hosting
+Execute `/senternet-site-firebase`:
 - Create `firebase.json` with caching headers, security headers, cleanUrls
 - Create `.firebaserc` with `$FIREBASE_PREFIX-dev` and `$FIREBASE_PREFIX-prod`
-- Add `deploy:dev` and `deploy:prod` scripts to `package.json`
+- Add `deploy:prod` script to `package.json` (required); add `deploy:dev` only if dev environment was set up (optional)
 
 ---
 
 ## Phase 2: SEO Foundation
 
 ### Step 3: Meta Tags
-Execute `/site-metatags`:
+Execute `/senternet-site-metatags`:
 - Add full meta tag block to `index.html` (OG, Twitter Card, PWA, canonical, favicon)
 - Add schema.org structured data (MobileApplication + WebSite, or Organization)
 - Add Apple Smart App Banner if this is an iOS app
 - Create `src/components/MetaTags.tsx` component
 
 ### Step 4: robots.txt
-Execute `/site-robots`:
+Execute `/senternet-site-robots`:
 - Create `public/robots.txt` pointing to sitemap
 
 ### Step 5: Sitemap
-Execute `/site-sitemap`:
-- Create `scripts/generate-sitemap.mjs` with initial routes (`/`, `/pricing`, `/privacy`, `/terms`)
+Execute `/senternet-site-sitemap`:
+- Create `scripts/generate-sitemap.mjs` with initial routes (`/`, `/privacy`, `/terms`)
 - Wire into `build:prod` script
 - Generate the initial `public/sitemap.xml`
 
 ### Step 6: IndexNow
-Execute `/site-indexnow`:
+Execute `/senternet-site-indexnow`:
 - Generate an IndexNow key
 - Create `public/$KEY.txt`
 - Create `scripts/indexnow.mjs`
@@ -67,13 +97,13 @@ Execute `/site-indexnow`:
 ## Phase 3: Analytics & Tracking
 
 ### Step 7: Google Analytics
-Execute `/site-google-analytics`:
+Execute `/senternet-site-google-analytics`:
 - Add GA block with comment markers to `index.html`
 - Verify the `htmlPlugin` in `vite.config.ts` handles injection/stripping
 - Set `VITE_GA_ID` in `.env.production`
 
-### Step 8: Reddit Pixel
-Execute `/site-reddit-pixel`:
+### Step 8: Reddit Pixel *(optional — only if running Reddit ads)*
+If advertising on Reddit, execute `/senternet-site-ads-reddit-pixel`:
 - Add Reddit pixel bootstrap stub to `index.html`
 - Create `src/components/RedditPixel.tsx`
 - Add `<RedditPixel>` to `src/App.tsx`
@@ -84,7 +114,7 @@ Execute `/site-reddit-pixel`:
 ## Phase 4: Build Pipeline
 
 ### Step 9: Prerendering
-Execute `/site-prerender`:
+Execute `/senternet-site-prerender`:
 - Create `scripts/prerender.mjs` with initial ROUTES list
 - Wire into `build:prod` and `build:dev` scripts
 - Verify the strip list covers GA, Reddit pixel, and Clarity scripts
@@ -94,7 +124,7 @@ Execute `/site-prerender`:
 ## Phase 5: Images
 
 ### Step 10: WebP Conversion
-Execute `/site-image-webp`:
+Execute `/senternet-site-image-webp`:
 - Create `scripts/convert-images.mjs`
 - Add `convert-images` npm script
 - Create `src/assets/` and `public/images/` directories
@@ -102,7 +132,7 @@ Execute `/site-image-webp`:
 - Add `<link rel="preload">` for hero image in `index.html`
 
 ### Step 11: Share Images
-Execute `/site-share-images`:
+Execute `/senternet-site-share-images`:
 - Create `scripts/generate-share-images.mjs` with home page image at minimum
 - Generate `public/share/home.png` + `home.webp`
 - Run the script to produce initial share images
@@ -113,48 +143,52 @@ Execute `/site-share-images`:
 ## Phase 6: Performance
 
 ### Step 12: Lighthouse Optimization
-Execute `/site-lighthouse`:
+Execute `/senternet-site-lighthouse`:
 - Apply all critical performance decisions to `vite.config.ts`, `main.tsx`, and `index.html`
 - Verify `modulepreload` injection works
 - Disable decorative animations on mobile via media query
 - Set `will-change: transform` on hero image wrapper
 
 ### Step 13: Mobile Optimization
-Execute `/site-mobile-optimize`:
+Execute `/senternet-site-mobile-optimize`:
 - Create mobile-sized hero variant (`-sm.webp`)
 - Add responsive `<link rel="preload">` with `media` attributes
 - Add `loading="lazy"` to all below-fold images
-- Disable particle/orb animations on mobile
 
 ---
 
 ## Phase 7: Optional Features
 
 ### Step 14: Multilingual (if requested)
-Execute `/site-multilingual`:
+Execute `/senternet-site-multilingual`:
 - Create `src/i18n.ts` with English and Spanish locales
 - Add `LanguageProvider` to `src/App.tsx`
 - Add `/es/*` routes
 - Update prerender script for locale variants
 - Update sitemap with `hreflang` alternates
 
-### Step 15: Ad Landing Pages (when running paid ads)
-Execute `/site-ads-landing`:
+### Step 15: Ad Landing Pages (optional — for paid ad campaigns)
+Ask the user: "Do you want ad landing pages for paid campaigns?" If yes, execute `/senternet-site-ads-landing`:
 - Create `src/components/LandingPage.tsx` base component
 - Create at least one campaign-specific landing page
 - Add route, prerender entry, and sitemap entry
 
-### Step 16: SEO Blog / Insights (when content is ready)
-Execute `/site-seo-blog`:
-- Create `src/components/InsightsIndexPage.tsx`
-- Add `/insights` route and prerender entry
-- Set up `src/data/` structure for posts and tickers
+If no, skip this step.
 
-### Step 17: Compare Pages (for competitive SEO)
-Execute `/site-compare-pages`:
+### Step 16: SEO Blog (when content is ready)
+Execute `/senternet-site-seo-blog`:
+- Ask the user what URL path the blog should use (default: `/blog`)
+- Create `src/components/BlogIndexPage.tsx` (renamed to match the chosen path)
+- Add the chosen route and prerender entry
+- Set up `src/data/` structure for posts
+
+### Step 17: Compare Pages (optional — for competitive SEO)
+Ask the user: "Do you want competitor comparison/alternative pages for SEO?" If yes, execute `/senternet-site-compare-pages`:
 - Create `src/components/ComparePages.tsx` with reusable `ComparePage` component
 - Create at least 3 competitor alternative pages
 - Add routes, prerender entries, and sitemap entries
+
+If no, skip this step.
 
 ---
 
@@ -162,9 +196,9 @@ Execute `/site-compare-pages`:
 
 1. `npm run dev` — dev server starts cleanly
 2. `npm run build:prod` — builds, prerenders all routes (check for `✗ EMPTY` failures)
-3. `npm run deploy:dev` — deploys to staging Firebase project
-4. Verify staging URL loads and meta tags are correct
-5. Run PageSpeed Insights against staging URL
+3. *(Optional — only if dev environment exists)* `npm run deploy:dev` — deploys to staging Firebase project
+4. *(Optional)* Verify staging URL loads and meta tags are correct
+5. *(Optional)* Run PageSpeed Insights against staging URL
 6. Fix any Lighthouse failures before first production deploy
 7. `npm run deploy:prod` — deploys to production + runs IndexNow
 

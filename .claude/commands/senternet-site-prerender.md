@@ -47,7 +47,6 @@ const buildDir = path.resolve(__dirname, '../build');
 // Add every route that should be prerendered
 const ROUTES = [
   '/',
-  '/pricing',
   '/privacy',
   '/terms',
   // Add more routes as you create pages

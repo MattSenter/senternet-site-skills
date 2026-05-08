@@ -28,9 +28,11 @@ When the image exists on mobile but at a smaller size:
 <picture>
   <source srcSet="/hero-sm.webp" type="image/webp" media="(max-width: 768px)" />
   <source srcSet="/hero.webp" type="image/webp" media="(min-width: 769px)" />
-  <img src="/hero.png" alt="App screenshot" width="560" height="1000" />
+  <img src="/hero.webp" alt="App screenshot" width="560" height="1000" />
 </picture>
 ```
+
+The fallback `<img src>` must be `.webp` — no PNG fallback needed since WebP is universally supported.
 
 Create the smaller version:
 ```js
@@ -45,10 +47,7 @@ When the image is completely below the fold or hidden on mobile (e.g., a Mac des
 ```tsx
 // CSS: hide on mobile
 <div className="hidden md:block">
-  <picture>
-    <source srcSet="/screenshot-mac.webp" type="image/webp" />
-    <img src="/screenshot-mac.png" alt="Desktop view" loading="lazy" />
-  </picture>
+  <img src="/screenshot-mac.webp" alt="Desktop view" loading="lazy" />
 </div>
 ```
 
@@ -65,12 +64,7 @@ function DesktopOnlyImage() {
 
   if (!isDesktop) return null;
 
-  return (
-    <picture>
-      <source srcSet="/screenshot-mac.webp" type="image/webp" />
-      <img src="/screenshot-mac.png" alt="Desktop view" loading="lazy" />
-    </picture>
-  );
+  return <img src="/screenshot-mac.webp" alt="Desktop view" loading="lazy" />;
 }
 ```
 

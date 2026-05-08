@@ -4,7 +4,29 @@ Achieve Lighthouse scores of Performance ≥94, Accessibility ≥98, Best Practi
 
 ## How to measure
 
-Use the PageSpeed Insights API directly (avoids browser caching noise):
+Use the PageSpeed Insights API directly (avoids browser caching noise).
+
+### Step 1 — Get a PSI API key
+
+**Auto-create with gcloud (preferred):** Run this to enable the API and create a key restricted to PageSpeed Insights:
+```bash
+gcloud services enable pagespeedonline.googleapis.com && \
+PSI_KEY=$(gcloud alpha services api-keys create \
+  --display-name="PageSpeed Insights" \
+  --api-target=service=pagespeedonline.googleapis.com \
+  --format="value(keyString)" 2>/dev/null) && \
+echo "PSI_API_KEY=$PSI_KEY"
+```
+Save the printed key — you'll use it in Step 2. If the `alpha` component isn't installed, gcloud will prompt you to install it.
+
+**No gcloud / manual fallback:**
+1. Go to [console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
+2. Click **Create Credentials → API key**
+3. Click **Edit key → Restrict key → API restrictions → PageSpeed Insights API**
+4. Save the key
+
+### Step 2 — Run the audit
+
 ```bash
 curl -s "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://www.DOMAIN.com/&strategy=mobile&key=YOUR_PSI_API_KEY" | python3 -c "
 import json,sys; d=json.load(sys.stdin); lh=d['lighthouseResult']
@@ -66,7 +88,6 @@ After a fresh deploy, wait 10–15 min before measuring — Firebase CDN edge no
 
 - [ ] No CSS animations with `opacity` or `background-color` on above-the-fold elements during initial load (these force repaints and inflate Speed Index)
 - [ ] `border-glow`, `neon-pulse`, and similar animated effects replaced with static styles for the first paint, then enabled after load
-- [ ] Orb/particle animations disabled on mobile via `@media (max-width: 768px) { .orb { display: none } }`
 
 ## Accessibility checklist (target ≥98)
 

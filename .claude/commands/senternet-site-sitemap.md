@@ -20,7 +20,6 @@ const LASTMOD = process.env.SITEMAP_LASTMOD || new Date().toISOString().slice(0,
 // Define all routes with their SEO priority
 const ROUTES = [
   { path: '/',        changefreq: 'weekly',  priority: '1.0' },
-  { path: '/pricing', changefreq: 'weekly',  priority: '0.9' },
   { path: '/about',   changefreq: 'monthly', priority: '0.8' },
   { path: '/privacy', changefreq: 'yearly',  priority: '0.3' },
   { path: '/terms',   changefreq: 'yearly',  priority: '0.3' },
@@ -123,7 +122,7 @@ When you add a new page, update all three files at the same time.
 |-----------|----------|------------|
 | Home | 1.0 | weekly |
 | Primary landing pages | 0.9 | weekly |
-| Features, pricing, about | 0.8 | monthly |
+| Features, about | 0.8 | monthly |
 | Blog/insight posts | 0.7–0.8 | monthly |
 | Compare / alternative pages | 0.7 | monthly |
 | Secondary content | 0.5 | monthly |
@@ -140,7 +139,7 @@ Use a sitemap index instead of a single sitemap:
     <loc>https://www.DOMAIN.com/sitemap-main.xml</loc>
   </sitemap>
   <sitemap>
-    <loc>https://www.DOMAIN.com/sitemap-tickers.xml</loc>
+    <loc>https://www.DOMAIN.com/sitemap-blog.xml</loc>
   </sitemap>
 </sitemapindex>
 ```

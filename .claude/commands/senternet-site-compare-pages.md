@@ -7,7 +7,7 @@ Create SEO-optimized "X alternative" and "X vs Y" pages to capture high-intent s
 "[Competitor] alternative" and "[Us] vs [Competitor]" searches have strong commercial intent — users are actively evaluating products. These pages rank well because:
 - The keyword is explicit in the URL and title
 - The content answers the searcher's actual question
-- Internal links from these pages to your home/pricing pages signal authority
+- Internal links from these pages to your home page signal authority
 
 ## Page formats
 
@@ -120,26 +120,25 @@ export function ComparePage({ title, description, heroHeadline, heroBody, compet
 ### 2. Create individual compare page components
 
 ```tsx
-export function YahooFinanceAlternativePage() {
+export function CompetitorAlternativePage() {
   return (
     <ComparePage
-      title="Best Yahoo Finance Alternative in 2026 - APPNAME"
-      description="Looking for a Yahoo Finance alternative? APPNAME gives you AI-powered portfolio podcasts instead of charts. Free on iPhone."
-      heroHeadline="The Yahoo Finance Alternative That Talks to You"
-      heroBody="Yahoo Finance is great for charts and news. But if you want your portfolio explained in plain English — APPNAME turns your holdings into a daily audio briefing."
-      competitorName="Yahoo Finance"
+      title="Best [Competitor] Alternative in 2026 - APPNAME"
+      description="Looking for a [Competitor] alternative? APPNAME gives you [key differentiator]. [Short proof point]."
+      heroHeadline="The [Competitor] Alternative That [Key Benefit]"
+      heroBody="[Competitor] is great for [what they do well]. But if you want [what APPNAME does differently] — APPNAME [how it delivers that benefit]."
+      competitorName="[Competitor]"
       features={[
-        { name: 'Portfolio tracking', yours: true, theirs: true },
-        { name: 'AI audio briefing', yours: true, theirs: false },
-        { name: 'Pre-market updates', yours: true, theirs: true },
-        { name: 'Crypto support', yours: true, theirs: true },
-        { name: 'No account required', yours: true, theirs: false },
-        { name: 'Free', yours: true, theirs: true },
+        { name: '[Core feature both share]', yours: true, theirs: true },
+        { name: '[Feature APPNAME has, competitor lacks]', yours: true, theirs: false },
+        { name: '[Feature competitor has, be honest]', yours: false, theirs: true },
+        { name: '[Another differentiator]', yours: true, theirs: false },
+        { name: 'Free tier', yours: true, theirs: false },
       ]}
-      verdict="If you read Yahoo Finance, APPNAME is the audio version. Same data, but it talks to you on your commute."
+      verdict="[One-sentence honest verdict that explains when to pick APPNAME vs the competitor]."
       ctaText="Try APPNAME Free"
-      ctaUrl="https://apps.apple.com/app/..."
-      image="/share/compare-yahoo.webp"
+      ctaUrl="https://www.DOMAIN.com/signup"
+      image="/share/compare-competitor.webp"
     />
   );
 }
@@ -148,7 +147,7 @@ export function YahooFinanceAlternativePage() {
 ### 3. Add routes and prerender entries
 
 For each compare page, add to:
-1. `src/App.tsx` — `<Route path="/compare/yahoo-finance-alternative" element={<YahooFinanceAlternativePage />} />`
+1. `src/App.tsx` — `<Route path="/compare/competitor-alternative" element={<CompetitorAlternativePage />} />`
 2. `scripts/prerender.mjs` — ROUTES array
 3. `public/sitemap.xml` — URL entry with priority 0.7
 
@@ -156,7 +155,7 @@ For each compare page, add to:
 
 - Add a "Comparisons" section to the footer
 - Link from the home page ("See how we compare")
-- Link between compare pages ("Also see: Robinhood Alternative")
+- Link between compare pages ("Also see: [Other Competitor] Alternative")
 
 Internal linking is critical for Google to discover and rank these pages.
 
@@ -166,12 +165,12 @@ Add entries to `scripts/generate-share-images.mjs` for each compare page. Use th
 
 ## SEO guidelines for compare pages
 
-- **URL**: use the keyword exactly — `/compare/yahoo-finance-alternative` not `/compare/yahoo`
+- **URL**: use the keyword exactly — `/compare/competitorname-alternative` not `/compare/competitorname`
 - **Title**: include the year (or "2026") — compare queries are time-sensitive
-- **H1**: matches the primary keyword ("Best Yahoo Finance Alternative")
+- **H1**: matches the primary keyword ("Best [Competitor] Alternative")
 - **Content**: be genuinely useful — explain real differences, don't just say you're better at everything
 - **Word count**: 600+ words; Google rewards depth for commercial comparison queries
 - **Features table**: include features where the competitor wins — authenticity builds trust
-- **CTA**: link to App Store or sign-up, not just the home page
-- **Internal links**: link to 2–3 other compare pages ("Also looking at Robin Hood? See our comparison.")
+- **CTA**: link to sign-up or your main CTA, not just the home page
+- **Internal links**: link to 2–3 other compare pages ("Also considering [Other Competitor]? See our comparison.")
 - **Update annually**: refresh the year in the title and revisit feature accuracy

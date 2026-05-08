@@ -1,6 +1,6 @@
 # Image Optimization: WebP Conversion
 
-Convert all site images to WebP format and enforce the `<picture>` element pattern throughout the codebase.
+Convert all site images to WebP format and use `.webp` everywhere — no PNG fallbacks, no `<picture>` elements.
 
 ## Steps
 
@@ -14,8 +14,7 @@ npm install -D sharp
 
 ```js
 import sharp from 'sharp';
-import { readdir } from 'fs/promises';
-import { stat } from 'fs/promises';
+import { readdir, stat } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -24,10 +23,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 async function convertDir(dir, { lossless = false, quality = 82 } = {}) {
   let files;
   try { files = await readdir(dir); } catch { return; }
-  const pngs = files.filter(f => f.endsWith('.png') || f.endsWith('.jpg') || f.endsWith('.jpeg'));
-  for (const file of pngs) {
+  const images = files.filter(f => /\.(png|jpg|jpeg)$/i.test(f));
+  for (const file of images) {
     const input = path.join(dir, file);
-    const output = path.join(dir, file.replace(/\.(png|jpg|jpeg)$/, '.webp'));
+    const output = path.join(dir, file.replace(/\.(png|jpg|jpeg)$/i, '.webp'));
     await sharp(input).webp(lossless ? { lossless: true } : { quality }).toFile(output);
     const inSize = (await stat(input)).size;
     const outSize = (await stat(output)).size;
@@ -38,16 +37,17 @@ async function convertDir(dir, { lossless = false, quality = 82 } = {}) {
 // Opaque photos and screenshots — lossy is fine
 await convertDir(path.resolve(__dirname, '../src/assets'), { quality: 82 });
 
-// Transparent PNGs (icons, logos with alpha) — must be lossless to preserve alpha channel
+// Transparent PNGs (icons, logos with alpha) — lossless to preserve alpha
 await convertDir(path.resolve(__dirname, '../public/images'), { lossless: true });
 
 // OG preview image
 const ogPng = path.resolve(__dirname, '../public/preview.png');
 const ogWebp = path.resolve(__dirname, '../public/preview.webp');
 try {
+  const { promises: fs } = await import('fs');
   await sharp(ogPng).webp({ quality: 82 }).toFile(ogWebp);
-  const inSize = (await (await import('fs')).promises.stat(ogPng)).size;
-  const outSize = (await (await import('fs')).promises.stat(ogWebp)).size;
+  const inSize = (await fs.stat(ogPng)).size;
+  const outSize = (await fs.stat(ogWebp)).size;
   console.log(`preview.png → preview.webp: ${(inSize/1024).toFixed(0)}KB → ${(outSize/1024).toFixed(0)}KB`);
 } catch { /* no OG image yet */ }
 ```
@@ -70,40 +70,48 @@ Extend the script by calling `convertDir()` for any additional image directories
 npm run convert-images
 ```
 
-Commit both the original files and the `.webp` outputs. The `.webp` files are not generated at build time — they must be in the repo.
+Commit the `.webp` outputs. Original PNG/JPG files can be deleted after conversion — they are not referenced anywhere.
 
-### 5. Use `<picture>` with WebP source in all image components
+### 5. Reference WebP directly in all image elements
 
-**Always use this pattern — never a bare `<img>` pointing at PNG or JPG:**
+Use a plain `<img>` pointing at the `.webp` file. No format-fallback `<picture>` — WebP is supported by all modern browsers.
+
+```tsx
+<img src="/path/to/image.webp" alt="Descriptive alt text" className="..." />
+```
+
+For responsive images with multiple sizes (single breakpoint, same image):
+
+```tsx
+<img
+  srcSet="/images/hero-400.webp 400w, /images/hero-800.webp 800w, /images/hero-1200.webp 1200w"
+  sizes="(max-width: 768px) 100vw, 50vw"
+  src="/images/hero-800.webp"
+  alt="Hero image"
+/>
+```
+
+`<picture>` **is allowed** for art direction — serving a different image crop or size per breakpoint:
 
 ```tsx
 <picture>
-  <source srcSet="/path/to/image.webp" type="image/webp" />
-  <img src="/path/to/image.png" alt="Descriptive alt text" className="..." />
+  <source srcSet="/hero-sm.webp" media="(max-width: 768px)" type="image/webp" />
+  <source srcSet="/hero.webp" media="(min-width: 769px)" type="image/webp" />
+  <img src="/hero.webp" alt="Hero image" width="800" height="600" />
 </picture>
 ```
 
-All layout and style attributes go on `<img>`, not on `<picture>`.
+Note: the fallback `<img src>` inside `<picture>` must also point at a `.webp` file — never `.png` or `.jpg`.
 
-For responsive images with multiple sizes:
-```tsx
-<picture>
-  <source
-    srcSet="/images/hero-400.webp 400w, /images/hero-800.webp 800w, /images/hero-1200.webp 1200w"
-    type="image/webp"
-    sizes="(max-width: 768px) 100vw, 50vw"
-  />
-  <img src="/images/hero-800.png" alt="Hero image" />
-</picture>
-```
+`<picture>` **is not allowed** for format fallbacks (WebP + PNG `<source>` pairs). That pattern is unnecessary since WebP is universal.
 
 ### 6. Rules
 
 - **Lossy (`quality: 82`)**: opaque photos, screenshots, illustrations without transparency
 - **Lossless**: anything with an alpha channel (transparent backgrounds, logos, icons)
-- **Commit both files**: original + `.webp` so the `<picture>` fallback always works
-- **Never** reference a PNG directly in `src=` if a WebP exists — always use `<picture>`
-- **OG image** (`public/preview.png`) must also have a `.webp` version for social crawlers that support it
+- **WebP only**: never reference a `.png` or `.jpg` in markup — convert and update all references
+- **`<picture>` for art direction only**: use `<picture>` when you need a different image (different crop or size) per breakpoint. Do not use `<picture>` solely to provide a PNG fallback for WebP.
+- **OG image** (`public/preview.webp`) is used for social crawlers; update any `<meta property="og:image">` tags to point at the `.webp`
 
 ### 7. LCP image special treatment
 

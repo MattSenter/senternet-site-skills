@@ -189,13 +189,13 @@ export function MetaTags({
 Every page must call `<MetaTags>` with page-specific values so prerendering captures correct metadata per route:
 
 ```tsx
-export function PricingPage() {
+export function AboutPage() {
   return (
     <>
       <MetaTags
-        title="Pricing - APPNAME"
-        description="Choose the plan that works for you."
-        image="/share/pricing.webp"
+        title="About - APPNAME"
+        description="Learn more about what we do."
+        image="/share/about.webp"
       />
       {/* page content */}
     </>
