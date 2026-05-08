@@ -109,7 +109,7 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 4. **Phase 3** — Analytics, email, and Reddit pixel (GA4, Resend, Reddit pixel)
 5. **Phase 4** — Build pipeline (Puppeteer prerendering)
 6. **Phase 5** — Images (WebP conversion, OG share images)
-7. **Phase 6** — Performance (Lighthouse, mobile optimization)
+7. **Phase 6** — Performance (local Lighthouse, mobile optimization; PSI after deploy when upfitting a live site)
 8. **Phase 7** — Optional (i18n, ad landing pages, blog, compare pages, reCAPTCHA)
 
 ### Individual skills

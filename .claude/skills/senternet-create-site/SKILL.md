@@ -322,7 +322,7 @@ In upfit mode, include reCAPTCHA Enterprise in the optional-feature menu if it i
 4. *(Optional)* Verify staging URL loads and meta tags are correct
 5. Fix any Lighthouse failures found on the local production build before first production deploy
 6. `npm run deploy:prod` — deploys to production + runs IndexNow
-7. *(Optional, manual)* Run PageSpeed Insights against production after deploy if you want a live CDN measurement
+7. *(Optional, upfit only)* If an existing deployed site and production URL are already detectable, run PageSpeed Insights against production after deploy to capture live CDN behavior
 
 ---
 
