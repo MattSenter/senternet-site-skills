@@ -124,6 +124,7 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | `/senternet-site-email-resend` | Transactional email with Resend + Firebase Functions — stores API key in Secret Manager and scaffolds Cloud Functions |
 | `/senternet-recaptcha-enterprise` | reCAPTCHA Enterprise keys for local, dev, and prod forms |
 | `/senternet-site-ads-reddit-pixel` | Reddit Ads conversion pixel with bootstrap stub |
+| `/senternet-site-favicon` | Favicon and app icon generation for browser tabs, bookmarks, and mobile home screens |
 | `/senternet-site-metatags` | Full SEO meta tags, OG, Twitter Card, schema.org, MetaTags component |
 | `/senternet-site-robots` | robots.txt pointing to sitemap |
 | `/senternet-site-sitemap` | Sitemap XML generation script with multilingual hreflang support |

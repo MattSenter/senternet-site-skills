@@ -1,6 +1,6 @@
 ---
 name: senternet-create-site
-description: Orchestrate the full Senternet site build by running foundation, SEO, analytics, prerender, image, and performance skills in order.
+description: Orchestrate the full Senternet site build by running foundation, favicon, SEO, analytics, prerender, image, and performance skills in order.
 ---
 
 # Create a Complete Optimized Marketing Site
@@ -145,7 +145,15 @@ After this step, verify these files exist and are correct before moving on:
 
 ## Phase 2: SEO Foundation
 
-### Step 4: Meta Tags
+### Step 4: Favicon Assets
+
+**Detection:**
+- `public/favicon.svg`, `public/favicon.png`, `public/favicon.ico`, and `public/apple-touch-icon.png` all exist → skip icon generation
+- `index.html` or `src/components/MetaTags.tsx` already links the favicon files → skip head tag patch
+
+Execute `/senternet-site-favicon` for any missing pieces.
+
+### Step 5: Meta Tags
 
 **Detection:**
 - `index.html` contains `og:title` → OG tags present; check for Twitter Card, PWA, canonical, favicon — add only what's missing
@@ -154,14 +162,14 @@ After this step, verify these files exist and are correct before moving on:
 
 Execute `/senternet-site-metatags` for any missing pieces.
 
-### Step 5: robots.txt
+### Step 6: robots.txt
 
 **Detection:**
 - `public/robots.txt` exists → skip; verify it points to the sitemap — update if not
 
 Execute `/senternet-site-robots` if missing or malformed.
 
-### Step 6: Sitemap
+### Step 7: Sitemap
 
 **Detection:**
 - `scripts/generate-sitemap.mjs` exists → skip script creation; verify routes include `/`, `/privacy`, `/terms`
@@ -170,7 +178,7 @@ Execute `/senternet-site-robots` if missing or malformed.
 
 Execute `/senternet-site-sitemap` for any missing pieces.
 
-### Step 7: IndexNow
+### Step 8: IndexNow
 
 **Detection:**
 - Any `public/*.txt` file matching a 32-char hex key → IndexNow key already exists; skip key generation
@@ -183,7 +191,7 @@ Execute `/senternet-site-indexnow` for any missing pieces.
 
 ## Phase 3: Analytics, Email & Tracking
 
-### Step 8: Google Analytics
+### Step 9: Google Analytics
 
 **Detection:**
 - `index.html` contains `<!-- GA_START -->` comment marker → GA block already present
@@ -192,7 +200,7 @@ Execute `/senternet-site-indexnow` for any missing pieces.
 
 Execute `/senternet-site-google-analytics` for any missing pieces.
 
-### Step 9: Transactional Email via Resend *(optional — for forms, notifications, or onboarding)*
+### Step 10: Transactional Email via Resend *(optional — for forms, notifications, or onboarding)*
 
 **Detection:**
 - `functions/src/index.ts` contains `RESEND_API_KEY` or `sendResendEmail` → skip
@@ -200,7 +208,7 @@ Execute `/senternet-site-google-analytics` for any missing pieces.
 
 In upfit mode, include transactional email in the optional-feature menu if it is not already detected. If the user selects it, execute `/senternet-site-email-resend`.
 
-### Step 10: Reddit Pixel *(optional — only if running Reddit ads)*
+### Step 11: Reddit Pixel *(optional — only if running Reddit ads)*
 
 **Detection:**
 - `src/components/RedditPixel.tsx` exists → skip
@@ -213,7 +221,7 @@ In upfit mode, include Reddit pixel in the optional-feature menu if it is not al
 
 ## Phase 4: Build Pipeline
 
-### Step 11: Prerendering
+### Step 12: Prerendering
 
 **Detection:**
 - `scripts/prerender.mjs` exists → skip script creation; verify ROUTES list covers current routes
@@ -225,7 +233,7 @@ Execute `/senternet-site-prerender` for any missing pieces.
 
 ## Phase 5: Images
 
-### Step 12: WebP Conversion
+### Step 13: WebP Conversion
 
 **Detection:**
 - `scripts/convert-images.mjs` exists → skip
@@ -234,7 +242,7 @@ Execute `/senternet-site-prerender` for any missing pieces.
 
 Execute `/senternet-site-image-webp` for any missing pieces.
 
-### Step 13: Share Images
+### Step 14: Share Images
 
 **Detection:**
 - `scripts/generate-share-images.mjs` exists → skip
@@ -249,7 +257,7 @@ Execute `/senternet-site-share-images` for any missing pieces.
 
 This phase is mandatory for every site. Do not mark the site complete until Lighthouse optimization has been executed against a locally served production build, the reported regressions have been addressed, and the site is retested.
 
-### Step 14: Lighthouse Optimization
+### Step 15: Lighthouse Optimization
 
 **Detection:**
 - `vite.config.ts` has `modulepreload` injection and `manualChunks` → still run `/senternet-site-lighthouse` against the local production build to verify actual performance, image, caching, and LCP discovery behavior
@@ -258,7 +266,7 @@ This phase is mandatory for every site. Do not mark the site complete until Ligh
 
 Execute `/senternet-site-lighthouse` unconditionally in this phase against a locally served `build/` output, then fix any reported Lighthouse issues before proceeding.
 
-### Step 15: Mobile Optimization
+### Step 16: Mobile Optimization
 
 **Detection:**
 - `public/images/` contains a `-sm.webp` hero variant → skip mobile hero creation
@@ -271,7 +279,7 @@ Execute `/senternet-site-mobile-optimize` for any missing pieces.
 
 ## Phase 7: Optional Features
 
-### Step 16: Multilingual (if requested)
+### Step 17: Multilingual (if requested)
 
 **Detection:**
 - `src/i18n.ts` exists → already multilingual; skip
@@ -280,7 +288,7 @@ Execute `/senternet-site-mobile-optimize` for any missing pieces.
 
 If not present, include Spanish (`/es/`) support in the optional-feature menu in upfit mode. Execute `/senternet-site-multilingual` if the user selects it.
 
-### Step 17: Ad Landing Pages
+### Step 18: Ad Landing Pages
 
 **Detection:**
 - `src/components/LandingPage.tsx` exists → skip base component
@@ -288,7 +296,7 @@ If not present, include Spanish (`/es/`) support in the optional-feature menu in
 
 In upfit mode, include ad landing pages in the optional-feature menu if they are not already detected. Execute `/senternet-site-ads-landing` if the user selects them.
 
-### Step 18: SEO Blog
+### Step 19: SEO Blog
 
 **Detection:**
 - A blog route and blog index component exist in `src/` → skip
@@ -296,7 +304,7 @@ In upfit mode, include ad landing pages in the optional-feature menu if they are
 
 In upfit mode, include the SEO blog in the optional-feature menu if it is not already detected. Execute `/senternet-site-seo-blog` if the user selects it.
 
-### Step 19: Compare Pages
+### Step 20: Compare Pages
 
 **Detection:**
 - `src/components/ComparePages.tsx` exists → skip
@@ -304,7 +312,7 @@ In upfit mode, include the SEO blog in the optional-feature menu if it is not al
 
 In upfit mode, include competitor comparison / alternative pages in the optional-feature menu if they are not already detected. Execute `/senternet-site-compare-pages` if the user selects them.
 
-### Step 20: reCAPTCHA Enterprise for Forms
+### Step 21: reCAPTCHA Enterprise for Forms
 
 **Detection:**
 - `gcloud recaptcha keys list --project "$PROJECT_ID"` shows existing local/dev/prod form keys → skip
@@ -314,7 +322,7 @@ In upfit mode, include reCAPTCHA Enterprise in the optional-feature menu if it i
 
 ---
 
-## Step 21: Verify everything works
+## Step 22: Verify everything works
 
 1. `npm run dev` — dev server starts cleanly
 2. `npm run build:prod` — builds, prerenders all routes (check for `✗ EMPTY` failures)
@@ -326,7 +334,7 @@ In upfit mode, include reCAPTCHA Enterprise in the optional-feature menu if it i
 
 ---
 
-## Step 22: Initialize Project Documentation
+## Step 23: Initialize Project Documentation
 
 **Detection:**
 - `AGENTS.md` exists → skip generation (do not overwrite existing project docs)
