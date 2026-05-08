@@ -247,14 +247,16 @@ Execute `/senternet-site-share-images` for any missing pieces.
 
 ## Phase 6: Performance
 
+This phase is mandatory for every site. Do not mark the site complete until Lighthouse optimization has been executed against a locally served production build, the reported regressions have been addressed, and the site is retested.
+
 ### Step 14: Lighthouse Optimization
 
 **Detection:**
-- `vite.config.ts` has `modulepreload` injection and `manualChunks` → likely optimized; check `main.tsx` for `app-ready` event
-- `index.html` has `<link rel="modulepreload">` → skip
-- CSS has `@media (prefers-reduced-motion)` or mobile animation disabling → skip
+- `vite.config.ts` has `modulepreload` injection and `manualChunks` → still run `/senternet-site-lighthouse` against the local production build to verify actual performance, image, caching, and LCP discovery behavior
+- `index.html` has `<link rel="modulepreload">` → still run `/senternet-site-lighthouse` locally
+- CSS has `@media (prefers-reduced-motion)` or mobile animation disabling → still run `/senternet-site-lighthouse` locally
 
-Execute `/senternet-site-lighthouse` for any missing pieces.
+Execute `/senternet-site-lighthouse` unconditionally in this phase against a locally served `build/` output, then fix any reported Lighthouse issues before proceeding.
 
 ### Step 15: Mobile Optimization
 
@@ -318,9 +320,9 @@ In upfit mode, include reCAPTCHA Enterprise in the optional-feature menu if it i
 2. `npm run build:prod` — builds, prerenders all routes (check for `✗ EMPTY` failures)
 3. *(Optional — only if dev environment exists)* `npm run deploy:dev` — deploys to staging Firebase project
 4. *(Optional)* Verify staging URL loads and meta tags are correct
-5. *(Optional)* Run PageSpeed Insights against staging URL
-6. Fix any Lighthouse failures before first production deploy
-7. `npm run deploy:prod` — deploys to production + runs IndexNow
+5. Fix any Lighthouse failures found on the local production build before first production deploy
+6. `npm run deploy:prod` — deploys to production + runs IndexNow
+7. *(Optional, manual)* Run PageSpeed Insights against production after deploy if you want a live CDN measurement
 
 ---
 
