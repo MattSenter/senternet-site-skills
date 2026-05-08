@@ -270,9 +270,17 @@ Ask: "Do you want an SEO blog?" only if not detected. Execute `/senternet-site-s
 
 Ask: "Do you want competitor comparison/alternative pages for SEO?" only if not detected. Execute `/senternet-site-compare-pages` if yes.
 
+### Step 19: reCAPTCHA Enterprise for Forms
+
+**Detection:**
+- `gcloud recaptcha keys list --project "$PROJECT_ID"` shows existing local/dev/prod form keys → skip
+- `recaptchaenterprise.googleapis.com` is already enabled → skip API enablement
+
+Ask: "Do you want to add reCAPTCHA Enterprise protection for forms?" only if not detected. Execute `/senternet-recaptcha-enterprise` if yes.
+
 ---
 
-## Final: Verify everything works
+## Step 20: Verify everything works
 
 1. `npm run dev` — dev server starts cleanly
 2. `npm run build:prod` — builds, prerenders all routes (check for `✗ EMPTY` failures)
@@ -284,7 +292,7 @@ Ask: "Do you want competitor comparison/alternative pages for SEO?" only if not 
 
 ---
 
-## Step 19: Initialize Project Documentation
+## Step 21: Initialize Project Documentation
 
 **Detection:**
 - `AGENTS.md` exists → skip generation (do not overwrite existing project docs)

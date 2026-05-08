@@ -95,6 +95,7 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | `/senternet-site-vite-setup` | Scaffold Vite + React + TypeScript with optimal config |
 | `/senternet-site-firebase` | Firebase Hosting with caching, security headers, multi-env deploy — creates or links Firebase projects after auth and confirmation |
 | `/senternet-site-google-analytics` | GA4 with lazy loading and build-time env gating — creates GA4 property and retrieves Measurement ID automatically |
+| `/senternet-recaptcha-enterprise` | reCAPTCHA Enterprise keys for local, dev, and prod forms |
 | `/senternet-site-ads-reddit-pixel` | Reddit Ads conversion pixel with bootstrap stub |
 | `/senternet-site-metatags` | Full SEO meta tags, OG, Twitter Card, schema.org, MetaTags component |
 | `/senternet-site-robots` | robots.txt pointing to sitemap |
