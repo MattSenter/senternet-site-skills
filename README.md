@@ -4,6 +4,13 @@ Claude Code slash commands for spinning up production-ready marketing sites.
 
 Each skill in `.claude/skills/` is a directory containing `SKILL.md` and becomes a `/senternet-*` slash command in Claude Code or a `$senternet-*` command in Codex. There is no application code here — the repo is prompt engineering for site-building workflows.
 
+## Example Sites
+
+Showcase of sites built with these skills:
+
+- [StockCar](https://www.stockcar.app) - "Turn your stock and investment portfolio into an up-to-date personalized podcast."
+- [Bee Ready](https://www.beeready.buzz) - "Non-profit providing CPR training and AEDs to youth sports teams."
+
 ## Prerequisites
 
 To use these skills end-to-end, make sure you have:
