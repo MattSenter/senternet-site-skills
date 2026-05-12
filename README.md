@@ -8,8 +8,8 @@ Each skill in `.claude/skills/` is a directory containing `SKILL.md` and becomes
 
 Showcase of sites built with these skills:
 
-- [StockCar](https://www.stockcar.app) - "Turn your stock and investment portfolio into an up-to-date personalized podcast."
-- [Bee Ready](https://www.beeready.buzz) - "Non-profit providing CPR training and AEDs to youth sports teams."
+- [StockCar](https://www.stockcar.app) - Turn your stock and investment portfolio into an up-to-date personalized podcast.
+- [Bee Ready](https://www.beeready.buzz) - Non-profit providing CPR training and AEDs to youth sports teams.
 
 ## Prerequisites
 
