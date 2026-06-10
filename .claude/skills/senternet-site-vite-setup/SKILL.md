@@ -44,6 +44,20 @@ Initialize a production-ready Vite + React + TypeScript project for a marketing 
    - Use `BrowserRouter` + `Routes` + `Route`
    - Add a catch-all `<Route path="*">` that redirects to `/`
    - Lazy-load page components with `React.lazy` + `Suspense`
+   - Add a `ScrollToTop` component that resets scroll on navigation, and render it inside `BrowserRouter` (above `Routes`). Without this, React Router preserves the scroll position across route changes — so clicking a link while scrolled to the bottom of one page lands the user partway down the next page. This is a consistent, easy-to-miss bug on new sites, so it must always be wired up.
+     ```tsx
+     import { useEffect } from 'react';
+     import { useLocation } from 'react-router-dom';
+
+     function ScrollToTop() {
+       const { pathname } = useLocation();
+       useEffect(() => {
+         window.scrollTo(0, 0);
+       }, [pathname]);
+       return null;
+     }
+     ```
+     Note: it must live *inside* `<BrowserRouter>` because it depends on `useLocation`. If the site uses hash links for in-page anchors, key the effect on `pathname` only (not `hash`) so anchor jumps still work.
 
 7. Create `.env.development` and `.env.production` files:
    ```

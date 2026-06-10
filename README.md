@@ -119,7 +119,7 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 1. **Prerequisites** — gcloud/Firebase auth
 2. **Phase 1** — Vite scaffold, design system, Firebase Hosting
 3. **Phase 2** — SEO (meta tags, robots.txt, sitemap, IndexNow)
-4. **Phase 3** — Analytics, email, and Reddit pixel (GA4, Resend, Reddit pixel)
+4. **Phase 3** — Analytics, email, and Reddit pixel (GA4 or PostHog, Resend, Reddit pixel)
 5. **Phase 4** — Build pipeline (Puppeteer prerendering)
 6. **Phase 5** — Images (WebP conversion, OG share images)
 7. **Phase 6** — Performance (local Lighthouse, mobile optimization; PSI after deploy when upfitting a live site)
@@ -138,8 +138,11 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | `/senternet-site-robots` | robots.txt pointing to sitemap |
 | `/senternet-site-sitemap` | Sitemap XML generation script with multilingual hreflang support |
 | `/senternet-site-indexnow` | IndexNow submission to Bing on every deploy |
+| `/senternet-site-analytics` | Help pick an analytics provider (GA4 vs PostHog), then hand off to the matching setup skill |
 | `/senternet-site-google-analytics` | GA4 with lazy loading and build-time env gating — guides Firebase Console linking and retrieves or confirms the Measurement ID |
+| `/senternet-site-posthog` | PostHog Cloud product analytics — events, funnels, replay — with browser-only lazy loading, production gating, and non-PII events |
 | `/senternet-site-email-resend` | Transactional email with Resend + Firebase Functions — stores API key in Secret Manager and scaffolds Cloud Functions |
+| `/senternet-site-stripe` | Stripe payments via Firebase Functions — hosted Checkout or embedded Payment Element, secret in Secret Manager, webhook fulfillment (license token, receipt email, or signed download URL) |
 | `/senternet-recaptcha-enterprise` | reCAPTCHA Enterprise keys for local, dev, and prod forms |
 | `/senternet-site-ads-reddit-pixel` | Reddit Ads conversion pixel with bootstrap stub |
 | `/senternet-site-image-webp` | WebP conversion script, `<picture>` pattern, preload for LCP |
@@ -147,10 +150,13 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | `/senternet-site-prerender` | Puppeteer-based static prerendering for all routes |
 | `/senternet-site-lighthouse` | Lighthouse/PageSpeed optimization checklist and decisions |
 | `/senternet-site-mobile-optimize` | Mobile image optimization, lazy loading, animation disabling |
+| `/senternet-site-mobile-forms` | Mobile keyboard, autocomplete, and autocorrect attributes for all form inputs |
+| `/senternet-site-mobile-nav` | Hamburger-style mobile nav with nested section anchors and body scroll lock |
 | `/senternet-site-multilingual` | i18n system with URL prefix routing and hreflang tags |
 | `/senternet-site-ads-landing` | Conversion-optimized ad landing pages |
 | `/senternet-site-seo-blog` | SEO blog with prerendered posts, share images, and tag index pages |
 | `/senternet-site-compare-pages` | Competitor alternative and vs. pages for SEO |
+| `/senternet-site-ai-disclosure` | Voluntary AI Disclosure page — interviews the user about AI usage, then writes it alongside Privacy and Terms |
 | `/senternet-site-csp` | Content Security Policy header with coverage for all third-party services in the suite |
 | `/senternet-site-init` | Generate AGENTS.md, CLAUDE.md, and README.md for the completed site |
 

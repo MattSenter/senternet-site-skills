@@ -122,6 +122,13 @@ General mapping rules:
 
 Use the section's `id`, `class`, or heading text to pick a name. If a section has `id="pricing"`, call it `PricingSection`. If it has no id but contains a `<h2>What our customers say</h2>`, call it `TestimonialsSection`.
 
+**Footer link organization (`SiteFooter.tsx`):** when the footer has more than ~4–5 links, group them into labeled categories under short headings instead of a single flat row. Common groupings:
+- **Legal** — Terms, Privacy, AI Disclosure
+- **Product** — Features, Pricing, Download, Changelog
+- **Company** — About, Blog, Other Projects, Contact
+
+Render each group as a column with a heading (e.g. `<h3>` or a styled label) above its links, and lay the groups out as a responsive multi-column grid (stacking on mobile). Keep a single flat row only while the footer is small; as later skills add links (AI Disclosure, Other Projects, blog, compare pages), migrate to grouped columns rather than letting the row grow unbounded. New footer links should be added into the category they belong to, not appended to the end.
+
 ## Step 5 — Convert HTML sections to React components
 
 For each section, create the component file. Rules for conversion:

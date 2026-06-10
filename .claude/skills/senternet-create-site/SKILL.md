@@ -47,6 +47,7 @@ Optional capabilities to inventory in upfit mode:
 5. **App Store URL** (if iOS app, e.g. `https://apps.apple.com/app/...`) — used in CTA links
 6. **Twitter/X handle** (e.g. `@MyAppHQ`) — used in Twitter Card meta tags
 7. **Multilingual?** (yes/no) — whether to add Spanish (`/es/`) support
+8. **Local dev port** — default `3000`. Ask which port to use, and explain they may want a different one if they run multiple sites locally (e.g. 3001, 3002, 3003). Pass the answer to `/senternet-site-vite-setup` as `$PORT`.
 
 **If upfitting an existing directory**, ask only what's missing or cannot be detected:
 - Read `package.json`, `firebase.json`, `.firebaserc`, `.firebase-domain.json`, `index.html`, and `.env.production` to infer app name, domain, canonical host, and GA ID before asking.
@@ -105,7 +106,10 @@ Phase 1 is mandatory for every new site. Do not consider the site created until 
 - `package.json` with `vite` and `react` in dependencies → skip scaffolding
 - `vite.config.ts` exists → check for `htmlPlugin`, `outDir: 'build'`, `manualChunks`; patch only missing pieces
 - `src/main.tsx` exists with `hydrateRoot` → skip; without it → patch
+- `src/App.tsx` renders a `ScrollToTop` component (a `useLocation` + `useEffect(() => window.scrollTo(0, 0), [pathname])` helper) inside `<BrowserRouter>` → skip; without it → patch it in. This is a consistent bug on existing sites: React Router preserves scroll position across navigation, so clicking a link while scrolled down lands the user partway down the next page. Always verify it is present and wired inside the router.
 - `.env.development` and `.env.production` exist → skip env file creation
+
+Pass the local dev port from the intake questions to `/senternet-site-vite-setup` as `$PORT` (default `3000`). On upfit runs, if `package.json`'s `dev` script and `.env.development` already pin a port, reuse that value instead of re-prompting.
 
 Execute `/senternet-site-vite-setup` for any missing pieces.
 
@@ -192,16 +196,23 @@ Execute `/senternet-site-indexnow` for any missing pieces.
 
 ## Phase 3: Analytics, Email & Tracking
 
-### Step 9: Google Analytics / Firebase Web App Setup
+### Step 9: Analytics Setup (Google Analytics or PostHog)
 
-**Detection:**
+**Provider selection:**
+- If the user has already picked a provider, go straight to it: `/senternet-site-google-analytics` (GA4) or `/senternet-site-posthog`.
+- If the provider is undecided, run `/senternet-site-analytics` to choose, then continue with the selected skill.
+- Detecting an existing provider: a non-empty `VITE_GA_ID` (or `<!-- GA_START -->` marker) means GA4 is already wired; a non-empty `VITE_POSTHOG_KEY` or `src/lib/analytics.ts` with a PostHog init means PostHog is already wired. Skip selection when one is already present.
+
+The detection and execution rules below apply to the **GA4** path. For the PostHog path, follow `/senternet-site-posthog` and skip the Firebase web-app / Measurement ID steps.
+
+**GA4 detection:**
 - `index.html` contains `<!-- GA_START -->` comment marker → GA block already present
 - `.env.production` contains a non-empty `VITE_GA_ID=G-...` value → skip env var setup
 - `vite.config.ts` has `htmlPlugin` handling GA injection → skip plugin verification
 - The Firebase project already has a web app configured, the Hosting site association is complete, and `.env.production` already has a non-empty GA ID → skip Firebase web-app setup
 - The Firebase project still needs a web app or Hosting association → run `/senternet-site-firebase` and follow its automated Firebase CLI flow
 
-Execution rule:
+Execution rule (GA4 path):
 - Resolve the production Firebase project ID first if you need it for the manual instructions, but do not use it to call `analyticsDetails` or `addGoogleAnalytics`.
 - If the Firebase project still needs the web app or Hosting association, run `/senternet-site-firebase` first.
 - Once the web app is created and the config is captured, either accept an existing Measurement ID or continue with the existing Measurement ID retrieval / env wiring step.
@@ -214,6 +225,14 @@ Execution rule:
 - `firebase.json` has a `functions` block and root `package.json` deploy script already includes `hosting,functions` → skip wiring
 
 In upfit mode, include transactional email in the optional-feature menu if it is not already detected. If the user selects it, execute `/senternet-site-email-resend`.
+
+### Step 10b: Stripe Payments *(optional — for selling a license, subscription, or product)*
+
+**Detection:**
+- `functions/src/*` references `STRIPE_SECRET_KEY` or `stripe.checkout` → skip
+- `firebase.json` rewrites include a Stripe function (e.g. `createCheckoutSession`) → skip wiring
+
+In upfit mode, include "Payments via Stripe" in the optional-feature menu if it is not already detected. If the user selects it, execute `/senternet-site-stripe`. Receipt-email and signed-download-URL fulfillment depend on `/senternet-site-email-resend`, so run that first (or alongside) when the user chooses those.
 
 ### Step 11: Reddit Pixel *(optional — only if running Reddit ads)*
 
@@ -282,11 +301,20 @@ Execute `/senternet-site-lighthouse` unconditionally in this phase against a loc
 
 Execute `/senternet-site-mobile-optimize` for any missing pieces.
 
+### Step 17: Mobile Navigation
+
+**Detection:**
+- `src/components/Layout.tsx` has `hidden md:flex` on the desktop nav and an `md:hidden` hamburger button → skip
+- Layout imports `useState` and toggles a `mobile-menu` panel → skip
+- Header nav is desktop-only with no responsive collapse → run
+
+Execute `/senternet-site-mobile-nav` for any missing pieces.
+
 ---
 
 ## Phase 7: Optional Features
 
-### Step 17: Multilingual (if requested)
+### Step 18: Multilingual (if requested)
 
 **Detection:**
 - `src/i18n.ts` exists → already multilingual; skip
@@ -295,7 +323,7 @@ Execute `/senternet-site-mobile-optimize` for any missing pieces.
 
 If not present, include Spanish (`/es/`) support in the optional-feature menu in upfit mode. Execute `/senternet-site-multilingual` if the user selects it.
 
-### Step 18: Ad Landing Pages
+### Step 19: Ad Landing Pages
 
 **Detection:**
 - `src/components/LandingPage.tsx` exists → skip base component
@@ -303,7 +331,7 @@ If not present, include Spanish (`/es/`) support in the optional-feature menu in
 
 In upfit mode, include ad landing pages in the optional-feature menu if they are not already detected. Execute `/senternet-site-ads-landing` if the user selects them.
 
-### Step 19: SEO Blog
+### Step 20: SEO Blog
 
 **Detection:**
 - A blog route and blog index component exist in `src/` → skip
@@ -311,7 +339,7 @@ In upfit mode, include ad landing pages in the optional-feature menu if they are
 
 In upfit mode, include the SEO blog in the optional-feature menu if it is not already detected. Execute `/senternet-site-seo-blog` if the user selects it.
 
-### Step 20: Compare Pages
+### Step 21: Compare Pages
 
 **Detection:**
 - `src/components/ComparePages.tsx` exists → skip
@@ -319,7 +347,7 @@ In upfit mode, include the SEO blog in the optional-feature menu if it is not al
 
 In upfit mode, include competitor comparison / alternative pages in the optional-feature menu if they are not already detected. Execute `/senternet-site-compare-pages` if the user selects them.
 
-### Step 21: reCAPTCHA Enterprise for Forms
+### Step 22: reCAPTCHA Enterprise for Forms
 
 **Detection:**
 - `gcloud recaptcha keys list --project "$PROJECT_ID"` shows existing local/dev/prod form keys → skip
@@ -329,7 +357,7 @@ In upfit mode, include reCAPTCHA Enterprise in the optional-feature menu if it i
 
 ---
 
-## Step 22: Verify everything works
+## Step 23: Verify everything works
 
 1. `npm run dev` — dev server starts cleanly
 2. `npm run build:prod` — builds, prerenders all routes (check for `✗ EMPTY` failures)
@@ -341,7 +369,7 @@ In upfit mode, include reCAPTCHA Enterprise in the optional-feature menu if it i
 
 ---
 
-## Step 23: Initialize Project Documentation
+## Step 24: Initialize Project Documentation
 
 **Detection:**
 - `AGENTS.md` exists → skip generation (do not overwrite existing project docs)
@@ -360,3 +388,7 @@ Every new page/route must update these three files together — missing any one 
 2. `scripts/prerender.mjs` — add to ROUTES array
 3. `public/sitemap.xml` (or regenerate via `generate-sitemap.mjs`)
 4. `scripts/generate-share-images.mjs` — add a share image block and run it
+
+## Footer link organization (enforce as links accumulate)
+
+The footer collects links from many skills (AI Disclosure, Other Projects, blog, compare pages, legal pages). Once it holds more than ~4–5 links, divide it into labeled category columns (e.g. **Legal** — Terms, Privacy, AI Disclosure; **Product** — Features, Pricing, Download; **Company** — About, Blog, Other Projects) rather than letting a single flat row grow unbounded. Each new footer link goes into the category it belongs to. See `/senternet-site-design` for the `SiteFooter.tsx` grouping convention. On upfit runs, if the footer already has many links in a flat list, migrate them into grouped columns.
