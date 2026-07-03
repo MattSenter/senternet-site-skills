@@ -119,7 +119,7 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 1. **Prerequisites** — gcloud/Firebase auth
 2. **Phase 1** — Vite scaffold, design system, Firebase Hosting
 3. **Phase 2** — SEO (meta tags, robots.txt, sitemap, IndexNow)
-4. **Phase 3** — Analytics, email, and Reddit pixel (GA4 or PostHog, Resend, Reddit pixel)
+4. **Phase 3** — Analytics, email, and Reddit pixel (GA4, PostHog, or Ahrefs Web Analytics, Resend, Reddit pixel)
 5. **Phase 4** — Build pipeline (Puppeteer prerendering)
 6. **Phase 5** — Images (WebP conversion, OG share images)
 7. **Phase 6** — Performance (local Lighthouse, mobile optimization; PSI after deploy when upfitting a live site)
@@ -141,6 +141,7 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | `/senternet-site-analytics` | Help pick one or more analytics providers (GA4, PostHog, Ahrefs Web Analytics — any combination), then hand off to each matching setup skill |
 | `/senternet-site-google-analytics` | GA4 with lazy loading and build-time env gating — guides Firebase Console linking and retrieves or confirms the Measurement ID |
 | `/senternet-site-posthog` | PostHog Cloud product analytics — events, funnels, replay — with browser-only lazy loading, production gating, and non-PII events |
+| `/senternet-site-ahrefs-web-analytics` | Ahrefs Web Analytics — free, privacy-friendly, cookieless traffic analytics with lazy loading and build-time env gating; no Firebase/Google linking, an alternative or addition to GA4 |
 | `/senternet-site-email-resend` | Transactional email with Resend + Firebase Functions — stores API key in Secret Manager and scaffolds Cloud Functions |
 | `/senternet-site-stripe` | Stripe payments via Firebase Functions — hosted Checkout or embedded Payment Element, secret in Secret Manager, webhook fulfillment (license token, receipt email, or signed download URL) |
 | `/senternet-recaptcha-enterprise` | reCAPTCHA Enterprise keys for local, dev, and prod forms |
