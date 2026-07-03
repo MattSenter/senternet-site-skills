@@ -138,7 +138,7 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | `/senternet-site-robots` | robots.txt pointing to sitemap |
 | `/senternet-site-sitemap` | Sitemap XML generation script with multilingual hreflang support |
 | `/senternet-site-indexnow` | IndexNow submission to Bing on every deploy |
-| `/senternet-site-analytics` | Help pick an analytics provider (GA4 vs PostHog), then hand off to the matching setup skill |
+| `/senternet-site-analytics` | Help pick one or more analytics providers (GA4, PostHog, Ahrefs Web Analytics — any combination), then hand off to each matching setup skill |
 | `/senternet-site-google-analytics` | GA4 with lazy loading and build-time env gating — guides Firebase Console linking and retrieves or confirms the Measurement ID |
 | `/senternet-site-posthog` | PostHog Cloud product analytics — events, funnels, replay — with browser-only lazy loading, production gating, and non-PII events |
 | `/senternet-site-email-resend` | Transactional email with Resend + Firebase Functions — stores API key in Secret Manager and scaffolds Cloud Functions |
