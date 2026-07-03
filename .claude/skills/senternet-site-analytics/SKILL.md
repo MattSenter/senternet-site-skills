@@ -1,27 +1,30 @@
 ---
 name: senternet-site-analytics
-description: Help the user choose between Google Analytics and PostHog, then hand off to the matching setup skill.
+description: Help the user choose among Google Analytics, PostHog, and Ahrefs Web Analytics (any combination), then hand off to each matching setup skill.
 ---
 
 # Analytics Router
 
-Use this skill when the user wants analytics on the site but has **not** yet picked a provider. It chooses between Google Analytics 4 and PostHog, then hands off — it does not implement anything itself.
+Use this skill when the user wants analytics on the site but has **not** yet picked a provider. It routes across Google Analytics 4, PostHog, and Ahrefs Web Analytics, then hands off — it does not implement anything itself.
 
 ## Choosing a provider
 
-Ask one short question if the choice is ambiguous, then route:
+Whenever the user wants analytics, prompt them for which provider(s) they prefer. Any combination is valid — one, two, or all three. They don't conflict: all load lazily and gate on production. Present the options, then route:
 
 - **Google Analytics 4** → run `/senternet-site-google-analytics`. Best for marketing-site traffic measurement, acquisition channels, and Search/Ads integration. Pairs naturally with the Firebase project this suite already sets up.
 - **PostHog** → run `/senternet-site-posthog`. Best for product analytics: events, funnels, retention, and session replay on an app-like site.
+- **Ahrefs Web Analytics** → run `/senternet-site-ahrefs-web-analytics`. Best for free, privacy-friendly, cookieless traffic and acquisition analytics; a lightweight GA4 alternative that needs no Firebase/Google linking.
 
 Quick guidance when the user is unsure:
 
-- Marketing/brochure site, cares about traffic sources and SEO → **GA4**.
+- Marketing/brochure site, cares about traffic sources and SEO → **GA4** or **Ahrefs Web Analytics**.
+- Wants traffic analytics without cookies, consent banners, or a Google/Firebase dependency → **Ahrefs Web Analytics**.
 - App, dashboard, or interactive product where per-user behavior and funnels matter → **PostHog**.
-- Wanting both is valid — they don't conflict. Set up GA4 first, then PostHog; both load lazily and gate on production.
+- Wanting more than one is valid — they don't conflict. Set them up in turn; all load lazily and gate on production.
 
 ## Handoff rules
 
-- Once the provider is known, hand off immediately to the target skill and stop.
+- Once the provider(s) are known, hand off immediately to the target skill(s) and stop.
+- When multiple providers are chosen, hand off to each setup skill in turn.
 - Do not repeat or preview the target skill's setup steps here.
-- Do not explain both options at length unless the user explicitly asks for a comparison.
+- Do not explain the options at length unless the user explicitly asks for a comparison.
