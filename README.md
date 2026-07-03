@@ -159,6 +159,7 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | `/senternet-site-ai-disclosure` | Voluntary AI Disclosure page — interviews the user about AI usage, then writes it alongside Privacy and Terms |
 | `/senternet-site-csp` | Content Security Policy header with coverage for all third-party services in the suite |
 | `/senternet-site-init` | Generate AGENTS.md, CLAUDE.md, and README.md for the completed site |
+| `/senternet-site-ahrefs-audit` | Pull Ahrefs Site Audit issues, apply the standard fix per issue class (WebP, alt text, 4xx), verify, and commit — Shopify-hosted images out of scope |
 
 ## Generated site stack
 
