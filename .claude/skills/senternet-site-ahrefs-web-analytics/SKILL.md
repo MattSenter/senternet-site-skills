@@ -91,7 +91,37 @@ VITE_AHREFS_ANALYTICS_KEY=
 VITE_AHREFS_ANALYTICS_KEY=your-ahrefs-key
 ```
 
-### 5. Strip the Ahrefs script from prerendered HTML
+### 5. Wire the production key into CI if the site deploys via GitHub Actions
+
+`.env.production` is not committed, so a CI build has no key unless one is supplied through GitHub Actions. Check whether the repo has a deploy workflow that runs the production build:
+
+```bash
+ls .github/workflows/            # look for deploy.yml (the canonical Senternet site-deploy workflow)
+grep -rl 'deploy:prod\|vite build' .github/workflows/ 2>/dev/null
+```
+
+If **no** deploy workflow exists, skip this step — the local `.env.production` value is enough. If one **does** exist, two edits are required (both, or the CI build silently strips the block and ships analytics-free HTML):
+
+1. **Reference the secret in the workflow.** Add `VITE_AHREFS_ANALYTICS_KEY` to the build step's `env:` block, alongside the other `VITE_*` values, in `.github/workflows/deploy.yml`:
+
+   ```yaml
+       env:
+         VITE_BASE_URL: ${{ secrets.VITE_BASE_URL }}
+         VITE_GA_ID: ${{ secrets.VITE_GA_ID }}
+         VITE_AHREFS_ANALYTICS_KEY: ${{ secrets.VITE_AHREFS_ANALYTICS_KEY }}
+   ```
+
+2. **Create the repo secret** with the same value as `.env.production` (skip if `gh secret list` already shows it):
+
+   ```bash
+   REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+   gh secret set VITE_AHREFS_ANALYTICS_KEY --repo "$REPO" --body "your-ahrefs-key"
+   gh secret list --repo "$REPO"    # confirm VITE_AHREFS_ANALYTICS_KEY is present
+   ```
+
+The secret name must match the env var name exactly. The value is the same Ahrefs `data-key` you put in `.env.production` — it is a public site identifier, not a credential, but it lives in secrets so the workflow's `env:` mapping stays uniform with the other `VITE_*` keys.
+
+### 6. Strip the Ahrefs script from prerendered HTML
 
 In `scripts/prerender.mjs`, strip the Ahrefs `<script>` tag so it isn't double-loaded when the hydrated app adds it (mirror the GA prerender-strip):
 
