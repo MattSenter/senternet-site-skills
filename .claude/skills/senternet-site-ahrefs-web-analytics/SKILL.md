@@ -24,15 +24,22 @@ None beyond an Ahrefs account. Unlike GA4, there is no Firebase Console linking 
 
 ### 1. Get the Ahrefs Web Analytics tracking key
 
+The only value this skill needs is the `data-key`. Its shape is a **UUID**: 36 characters, lowercase hex in the `8-4-4-4-12` groupings, e.g. `a1b2c3d4-5678-90ab-cdef-1234567890ab` (regex `[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`). Treat that pattern as a sanity check, not a hard gate — if a supplied value looks close but doesn't match exactly, confirm it with the user rather than rejecting it.
+
+**If the user supplied the key when invoking this command, use it directly and skip the dashboard steps.** Accept either form and extract the key without asking again:
+
+- a bare key: `a1b2c3d4-5678-90ab-cdef-1234567890ab`
+- the whole install snippet pasted in — pull the value out of `data-key="..."`.
+
+Only when no key was supplied, retrieve it from Ahrefs:
+
 1. Sign in to the Ahrefs dashboard and open **Web Analytics**.
 2. Add the website/project for this site's domain.
 3. Ahrefs generates an install snippet of the form:
    ```html
    <script src="https://analytics.ahrefs.com/analytics.js" data-key="YOUR_KEY" async></script>
    ```
-4. Copy the `data-key` value — that is the only value this skill needs.
-
-If the user already has a key, accept it and skip the dashboard steps.
+4. Copy the `data-key` value.
 
 ### 2. Add the Ahrefs block to `index.html`
 
