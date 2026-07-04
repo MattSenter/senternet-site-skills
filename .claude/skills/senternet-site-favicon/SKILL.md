@@ -73,6 +73,18 @@ Check the generated files at browser-tab size and on a dark and light background
 
 If the favicon is used in a prerendered or deployed site, confirm the public paths resolve from the final hosting root.
 
+### 6. Commit the generated assets
+
+These files are generated build outputs, so commit them as the final step, never leaving the working tree dirty across sessions. Stage the generated icons together with any head-tag wiring from Step 4 and commit with a descriptive message:
+
+```bash
+git add public/favicon.svg public/favicon.png public/favicon.ico public/apple-touch-icon.png
+git add index.html   # and/or the shared meta-tags component, if the icon references changed
+git commit -m "Add favicon and app icon assets"
+```
+
+If you only patched a subset of the icons, stage just those files. Confirm `git status` is clean before finishing.
+
 ## Notes
 
 - Keep favicon design intentionally simpler than the main logo

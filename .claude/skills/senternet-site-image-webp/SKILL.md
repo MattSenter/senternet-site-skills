@@ -75,7 +75,7 @@ Extend the script by calling `convertDir()` for any additional image directories
 npm run convert-images
 ```
 
-Commit the `.webp` outputs. Original PNG/JPG files can be deleted after conversion — they are not referenced anywhere.
+Original PNG/JPG files can be deleted after conversion — they are not referenced anywhere once Step 5 updates the markup. The `.webp` outputs are committed in the final step below.
 
 ### 5. Reference WebP directly in all image elements
 
@@ -130,3 +130,15 @@ The hero image (likely the LCP element) needs a `<link rel="preload">` in `index
 ```
 
 The preloaded file must use a **stable public URL** (not a Vite-hashed asset) so the `<link>` URL matches the actual `src`. Place hero images in `public/` not `src/assets/`.
+
+### 8. Commit the generated assets
+
+These files are generated build outputs, so commit them as the final step, never leaving the working tree dirty across sessions. Stage the new `.webp` files, any deleted originals, and the script/markup changes, then commit with a descriptive message:
+
+```bash
+git status            # review what changed first
+git add -A            # stages new .webp files and removes the converted-away originals
+git commit -m "Convert site images to WebP"
+```
+
+Confirm `git status` is clean before finishing.

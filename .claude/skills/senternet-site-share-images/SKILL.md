@@ -228,7 +228,7 @@ The title always renders in the site's configured font (Step 1); set `SITE_FONT_
 node scripts/generate-share-images.mjs
 ```
 
-Commit the output files in `public/share/`.
+The generated images land in `public/share/` — they are committed in the final step below.
 
 ### 7. Add the script to `package.json`
 
@@ -257,6 +257,19 @@ The `MetaTags` component resolves root-relative paths to absolute URLs using `VI
 ### 9. Add all share images to the prerender script's third-party strip list
 
 Share images are static files — no action needed. But ensure the `og:image` meta tag in each prerendered page points to the correct share image URL, not the default home preview.
+
+### 10. Commit the generated assets
+
+These files are generated build outputs, so commit them as the final step, never leaving the working tree dirty across sessions. Stage the generated images together with the generator and any wiring changes and commit with a descriptive message:
+
+```bash
+git add public/share                                    # the generated .jpg + .png share images
+git add scripts/generate-share-images.mjs package.json  # the generator script + npm script
+git add src   # any page components whose og:image now points at the new share image
+git commit -m "Add per-page Open Graph share images"
+```
+
+Confirm `git status` is clean before finishing.
 
 ## Design guidelines
 
