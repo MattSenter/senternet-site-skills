@@ -5,7 +5,7 @@ description: Add a Content Security Policy for Senternet marketing sites.
 
 # Content Security Policy (CSP) Setup
 
-Add a `Content-Security-Policy` header to Firebase Hosting that locks down which scripts, styles, and connections the site is allowed to make. Covers all services in the Senternet skill suite (GA4, Reddit Pixel, Firebase).
+Add a `Content-Security-Policy` header to Firebase Hosting that locks down which scripts, styles, and connections the site is allowed to make. Covers all services in the Senternet skill suite (GA4, Ahrefs Web Analytics, Reddit Pixel, Firebase).
 
 ## Steps
 
@@ -14,7 +14,7 @@ Add a `Content-Security-Policy` header to Firebase Hosting that locks down which
 Check `index.html` and `src/` to determine which services are active:
 
 ```bash
-grep -r "googletagmanager\|redditstatic\|firebase\|googleapis" index.html src/ --include="*.tsx" --include="*.ts" --include="*.html" -l
+grep -r "googletagmanager\|analytics.ahrefs.com\|redditstatic\|firebase\|googleapis" index.html src/ --include="*.tsx" --include="*.ts" --include="*.html" -l
 ```
 
 Note which are present — the CSP policy is additive based on what's actually in the project.
@@ -116,6 +116,12 @@ connect-src → add: https://www.google-analytics.com https://analytics.google.c
 script-src  → add: https://www.redditstatic.com
 connect-src → add: https://alb.reddit.com https://www.redditstatic.com
 img-src     → add: https://www.redditstatic.com
+```
+
+**If Ahrefs Web Analytics is present** (from `/senternet-site-ahrefs-web-analytics`), extend:
+```
+script-src  → add: https://analytics.ahrefs.com
+connect-src → add: https://analytics.ahrefs.com
 ```
 
 **If Firebase Auth or Firestore is used** (check `src/` for `initializeApp`), extend:

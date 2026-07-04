@@ -132,6 +132,17 @@ html = html.replace(
 );
 ```
 
+### 7. Allowlist `analytics.ahrefs.com` in the CSP
+
+If the site has a Content Security Policy (from `/senternet-site-csp`), the default `script-src 'self'` blocks the Ahrefs script from loading and `connect-src 'self'` blocks it from beaconing data back. Extend the policy in `firebase.json`:
+
+```
+script-src   → add: https://analytics.ahrefs.com
+connect-src  → add: https://analytics.ahrefs.com
+```
+
+If the site has no CSP yet, skip this — `/senternet-site-csp` already knows to include Ahrefs Web Analytics when it generates the policy. After editing the CSP, confirm in DevTools that there are no CSP violation errors for `analytics.ahrefs.com` in the console.
+
 ## Verification
 
 After deploying to production:
