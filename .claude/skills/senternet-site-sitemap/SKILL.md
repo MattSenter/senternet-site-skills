@@ -22,12 +22,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const SITE_URL = 'https://www.DOMAIN.com'; // replace with actual domain
 const LASTMOD = process.env.SITEMAP_LASTMOD || new Date().toISOString().slice(0, 10);
 
-// Define all routes with their SEO priority
+// Define all routes with their SEO priority.
+// NEVER list a `noindex` route here (see "Never include noindex routes").
+// Legal pages like /privacy and /terms are typically noindex, so they are
+// deliberately absent from this example.
 const ROUTES = [
   { path: '/',        changefreq: 'weekly',  priority: '1.0' },
   { path: '/about',   changefreq: 'monthly', priority: '0.8' },
-  { path: '/privacy', changefreq: 'yearly',  priority: '0.3' },
-  { path: '/terms',   changefreq: 'yearly',  priority: '0.3' },
   // Add landing pages, blog posts, compare pages, etc.
 ];
 
@@ -121,7 +122,35 @@ The routes array in `generate-sitemap.mjs` must stay in sync with:
 
 When you add a new page, update all three files at the same time.
 
-### 5. Priority guidelines
+### 5. Never include noindex routes
+
+A sitemap tells search engines "these are my canonical, indexable pages." A
+route that renders `<meta name="robots" content="noindex, ...">` says the
+opposite. Listing a noindex route in the sitemap is a direct contradiction that
+Google Search Console flags as a coverage error ("Submitted URL marked
+noindex"), so it must never happen.
+
+**Rule: a route belongs in `ROUTES` only if it is indexable. If a page is
+noindex, leave it out of the sitemap entirely.**
+
+Legal / boilerplate pages (`/privacy`, `/terms`, and often `/ai-disclosure`)
+are the usual noindex candidates: they carry no search value and can dilute or
+duplicate signals. When a page is set to noindex (via the site's `MetaTags`
+`noindex` prop or an equivalent `<meta name="robots">`), remove it from:
+
+- `scripts/generate-sitemap.mjs` (`ROUTES`)
+- `scripts/prerender.mjs` — keep prerendering it (crawlers still fetch direct
+  links to it), it just must not be advertised in the sitemap
+- Leave the React `<Route>` in `src/App.tsx`
+
+Leave a short comment where the route would otherwise sit, so the omission
+reads as deliberate rather than a missed sync. Conversely, before marking a
+route noindex, delete it from `ROUTES` in the same change.
+
+### 6. Priority guidelines
+
+Only indexable routes appear in the sitemap (see the rule above), so this table
+covers indexable page types.
 
 | Page type | Priority | Changefreq |
 |-----------|----------|------------|
@@ -131,9 +160,8 @@ When you add a new page, update all three files at the same time.
 | Blog/insight posts | 0.7–0.8 | monthly |
 | Compare / alternative pages | 0.7 | monthly |
 | Secondary content | 0.5 | monthly |
-| Legal (privacy, terms) | 0.3 | yearly |
 
-### 6. For high-volume programmatic pages (100+ pages)
+### 7. For high-volume programmatic pages (100+ pages)
 
 Use a sitemap index instead of a single sitemap:
 
