@@ -244,6 +244,7 @@ Once the blog exists, a scheduled Claude Code routine can write each new post, s
 - **Never create a post with status `scheduled`.** A scheduled post fires on wall-clock time whether or not the deploy landed. Use `mode: 'shareNow'` (only after `RELEASE-OK`) for immediate posts. For a draft that a daily release routine publishes later, use `saveToDraft: true` with `mode: 'customScheduled'` and a **future** `dueAt` (the intended publish time). Do not use `addToQueue` (the `create_post` default): it silently drops `dueAt`, and a draft with no `dueAt` is invisible to the release routine forever.
 - **Twitter / X:** put the post URL in the `text`. X has no link-attachment field.
 - **LinkedIn: attach the share image as a NATIVE IMAGE ASSET and put the URL in the `text`. Do NOT use `metadata.linkedin.linkAttachment`.** LinkedIn does not auto-fetch `og:image` for API-posted shares the way Facebook does, so a link attachment renders a bare URL card with no image, even when the page's OG tags are perfect. Passing the image as a real asset makes it render, and native-image posts also outrank outbound-link posts in LinkedIn's feed. Use the PNG or JPG share image, not WebP (LinkedIn's image proxy is reliable on PNG/JPG and historically flaky on WebP).
+  - **This applies to EVERY LinkedIn channel in the run, with no exceptions — company pages AND personal profiles.** The common failure is attaching the asset for one brand (e.g. `senternet`) and shipping a sibling channel (e.g. `beereadyinc`, `msenter`) in the same batch with `assets: []`; that sibling renders a bare link. Build the `assets` array once and pass it to every LinkedIn `create_post`; never send a LinkedIn post whose `assets` is empty.
 
   ```js
   create_post({
@@ -260,7 +261,7 @@ Once the blog exists, a scheduled Claude Code routine can write each new post, s
   ```
 
 - **Facebook:** `metadata.facebook.type: 'post'` + `metadata.facebook.linkAttachment.url` works; Facebook does unfurl `og:image`.
-- **Verify, do not assume.** `create_post` / `edit_post` may hit a ~10s client timeout but still succeed server-side. Confirm with `get_post` (status `sent`/`sending`) before retrying, or you will double-post.
+- **Verify, do not assume.** `create_post` / `edit_post` may hit a ~10s client timeout but still succeed server-side. Confirm with `get_post` (status `sent`/`sending`) before retrying, or you will double-post. **For LinkedIn, also confirm the returned post's `assets` array is non-empty** — an empty `assets` means the card will render as a bare link and the image must be re-attached (a `sent` LinkedIn post cannot have media edited afterward; delete and re-post to fix).
 
 ### Cross-account amplification (optional)
 
