@@ -357,3 +357,16 @@ useEffect(() => {
 5. **`'en'`** — hardcoded default
 
 The language switcher writes `localStorage.lang` before navigating, so a user who picks a language at `/` is remembered on their next visit even if they land on `/` again.
+
+## Framework: Next.js track
+
+The URL structure and hreflang policy are unchanged (`/es/...` prefixes, `x-default` pointing at English). The mechanism is the router, not a context provider plus prerender loop.
+
+- Move routes under a dynamic segment: `app/[locale]/page.tsx`, `app/[locale]/about/page.tsx`. Export `generateStaticParams()` returning the locale list so every locale is rendered statically at build time.
+- Use a library built for the App Router (e.g. `next-intl`) for message loading and locale detection, rather than the `LanguageProvider` pattern. Do not add `i18next` wired through a client context — it forces the whole tree client-side.
+- Locale detection and redirects go in `middleware.ts`.
+- `hreflang` comes from `alternates.languages` in each page's `metadata`, and must match the alternates emitted by `app/sitemap.ts`. Set both from the same locale list.
+- Extend `config/routes.mjs` with the locale prefixes so the sitemap and IndexNow cover every localized URL.
+- There is no `/es/` loop to add to a prerender script, because there is no prerender script.
+
+See `/senternet-site-framework` for the full convention map.

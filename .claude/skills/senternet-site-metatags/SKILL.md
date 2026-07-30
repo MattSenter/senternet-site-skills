@@ -214,3 +214,75 @@ export function AboutPage() {
 - OG image dimensions should be 1200x630 minimum; 1536x1024 for retina displays
 - The `og:url` and `canonical` values must match exactly — search engines penalize mismatches
 - Never let two pages have identical `<title>` tags
+
+## Framework: Next.js track
+
+On the `nextjs` track, metadata is data exported from the route, not DOM mutation performed after hydration. **Do not create `src/components/MetaTags.tsx`** — a client component that writes into `document.head` fights the Metadata API, loses on the server render, and gives crawlers the wrong tags on first paint.
+
+### Base tags → `app/layout.tsx`
+
+Everything step 1 puts in `index.html` becomes the layout's `metadata` export. Set `metadataBase` first: without it, every relative OG image path ships as a relative URL that crawlers cannot fetch.
+
+```tsx
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'),
+  title: { default: 'APPNAME - Tagline', template: '%s | APPNAME' },
+  description: 'One sentence description for search results.',
+  applicationName: 'APPNAME',
+  authors: [{ name: 'APPNAME' }],
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: 'website',
+    siteName: 'APPNAME',
+    locale: 'en_US',
+    url: '/',
+    images: [{ url: '/share/home.png', width: 1200, height: 630, alt: 'APPNAME - short alt text' }],
+  },
+  twitter: { card: 'summary_large_image', creator: '@HANDLE', site: '@HANDLE' },
+  appleWebApp: { capable: true, title: 'APPNAME', statusBarStyle: 'black-translucent' },
+  formatDetection: { telephone: false },
+  alternates: { canonical: '/' },
+};
+
+export const viewport: Viewport = { themeColor: '#PRIMARY_COLOR' };
+```
+
+For an iOS app, `appleWebApp` plus `itunes: { appId: 'APPSTORE_ID' }` replaces the hand-written `apple-itunes-app` tag.
+
+### Per-page tags → `export const metadata` in each `page.tsx`
+
+```tsx
+export const metadata: Metadata = {
+  title: 'About',                       // becomes "About | APPNAME" via the layout template
+  description: 'Learn more about what we do.',
+  alternates: { canonical: '/about' },
+  openGraph: { url: '/about', images: [{ url: '/share/about.png', width: 1200, height: 630 }] },
+};
+```
+
+For routes whose content is dynamic (blog posts, comparison pages), export `generateMetadata({ params })` instead and derive the title, description, canonical, and image from the same data the page renders.
+
+For a `noindex` page, set `robots: { index: false, follow: true }` — and mark it `indexable: false` in `config/routes.mjs` in the same change so it leaves the sitemap too.
+
+### Structured data
+
+JSON-LD has no metadata-object equivalent. Render it as a script tag in the layout (site-wide `Organization`/`WebSite`) or in the page (per-page `MobileApplication`, `Article`, `Product`):
+
+```tsx
+<script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+/>
+```
+
+Keep it in a server component so it lands in the HTML rather than being injected after hydration.
+
+### Favicon
+
+Delete the hand-written `<link rel="icon">` tags. `app/icon.png`, `app/apple-icon.png`, and `app/favicon.ico` are file conventions that emit those tags automatically; hand-written ones duplicate them.
+
+### Verification
+
+`npm run build && npm start`, then `curl -s localhost:$PORT/<route> | grep -E 'og:|canonical|<title>'` for every route. The tags must be in the HTML response itself, not added later by script.
+
+See `/senternet-site-framework` for the full convention map.

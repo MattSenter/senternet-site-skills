@@ -13,8 +13,20 @@ Skills live in `.claude/skills/` as directories containing `SKILL.md`, following
 1. Create `.claude/skills/senternet-site-<feature>/SKILL.md`
 2. Add it to the table in `README.md`
 3. If it's a phase in the full site setup, add its execution step to `senternet-create-site/SKILL.md` in the correct phase order
+4. If the skill's steps are framework-specific, give it a `## Framework: Next.js track` section at the end (or state that it does not apply to that track), and check whether `.claude/skills/senternet-site-framework/SKILL.md`'s convention map needs a new row
 
-## Architecture of a generated site
+## Framework tracks
+
+Generated sites run on one of two tracks, chosen at the start of `senternet-create-site` and recorded in `.site-framework.json` in the generated site:
+
+- **`vite`** (default) — Vite + React on Firebase Hosting, static output plus Puppeteer prerendering
+- **`nextjs`** — Next.js App Router on Firebase App Hosting, SSR on Cloud Run
+
+`.claude/skills/senternet-site-framework/SKILL.md` is the source of truth: track definitions, how to detect the track in an existing repo, the Vite ↔ Next.js convention map, and the outcome contract both tracks must satisfy. Most skills are written against the `vite` track first and carry a `## Framework: Next.js track` section describing the delta. `senternet-site-prerender` is the one skill that does not apply to the `nextjs` track at all.
+
+The rest of this file describes the **`vite` track**, which is the default and the one most generated sites use.
+
+## Architecture of a generated site (`vite` track)
 
 Skills produce sites with this tech stack:
 - **Vite + React + TypeScript** — scaffolded via `senternet-site-vite-setup`
@@ -74,4 +86,4 @@ Firebase Hosting serves static headers (no per-request nonces). Use SHA-256 hash
 
 ## Skill execution order (from `senternet-create-site`)
 
-Prerequisites → Phase 1 (Vite, Design, Firebase) → Phase 2 SEO (metatags, robots, sitemap, IndexNow) → Phase 3 Analytics (GA4, Reddit pixel) → Phase 4 Build pipeline (prerender) → Phase 5 Images (WebP, share images) → Phase 6 Performance (Lighthouse, mobile) → Phase 7 Optional (i18n, ad landing pages, blog, compare pages)
+Framework choice → Prerequisites → Phase 1 (framework scaffold, Design, Firebase) → Phase 2 SEO (metatags, robots, sitemap, IndexNow) → Phase 3 Analytics (GA4, Reddit pixel) → Phase 4 Build pipeline (prerender — `vite` track only) → Phase 5 Images (WebP, share images) → Phase 6 Performance (Lighthouse, mobile) → Phase 7 Optional (i18n, ad landing pages, blog, compare pages)

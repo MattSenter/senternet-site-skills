@@ -1,11 +1,18 @@
 ---
 name: senternet-site-firebase
-description: Set up Firebase Hosting, custom domains, project IDs, headers, and deploy scripts.
+description: Set up Firebase Hosting (Vite track) or Firebase App Hosting (Next.js track) — custom domains, project IDs, headers, and deploy scripts.
 ---
 
 # Firebase Hosting Setup
 
 Add Firebase Hosting to a Vite + React site with optimal caching, security headers, custom domain handoff, and multi-environment deployment. Can be run on a fresh project or re-run later to add a missing environment or finish domain setup.
+
+**Which product to set up depends on the site's framework track** (see `/senternet-site-framework`):
+
+- `vite` → **Firebase Hosting** (static CDN). Follow the steps below as written.
+- `nextjs` → **Firebase App Hosting** (SSR on Cloud Run). Steps 1–5 (CLI, prefix, environments, project creation) apply as written; then jump to the **Next.js track: App Hosting** section at the end instead of steps 6–9.
+
+Detect the track from `.site-framework.json` before starting.
 
 ## Prerequisites
 
@@ -231,3 +238,138 @@ If the user later confirms the domain is connected and SSL is issued, update `st
 - Security headers (`X-Frame-Options`, etc.) satisfy Lighthouse Best Practices checks
 - If the app later adds Firebase Functions, update `firebase.json` to include a `functions` key and change `deploy:prod` to `firebase deploy --only hosting,functions`
 - When the custom domain is connected, use `https://www.DOMAIN.com` everywhere in canonical URLs, robots.txt, sitemap generation, and share/meta tags
+
+---
+
+## Next.js track: App Hosting
+
+Use this section instead of steps 6–9 when `.site-framework.json` says `"framework": "nextjs"`. Steps 1–5 above (Firebase CLI, prefix derivation, environment selection, project creation) still apply unchanged.
+
+App Hosting is a different product from Hosting: it builds your repo with Cloud Build and serves it from Cloud Run, so it deploys from a **connected git branch** rather than from a local `firebase deploy` of a build directory.
+
+### N1. Confirm the repo has a GitHub remote
+
+App Hosting cannot create a backend without one:
+
+```bash
+git remote -v
+```
+
+If there is no remote, run `/senternet-site-github-setup` first and push the branch. Do not create the backend against a repo that has no pushed commits.
+
+### N2. Enable the required APIs
+
+```bash
+gcloud services enable \
+  firebaseapphosting.googleapis.com \
+  cloudbuild.googleapis.com \
+  run.googleapis.com \
+  secretmanager.googleapis.com \
+  --project "$PREFIX-prod"
+```
+
+Repeat for `$PREFIX-dev` if a dev environment was created.
+
+### N2b. If the repo is a monorepo, set up Turborepo first
+
+**App Hosting cannot build a workspaces repo on workspaces alone.** The builder resolves the app's dependencies through a supported monorepo tool — Nx or Turborepo ([Turborepo support shipped January 2026](https://firebase.blog/posts/2026/01/apphosting-turborepo/)) — and a root `package.json` with `"workspaces"` but no such tool fails at build time. This is the single most common surprise when moving an existing Next.js repo onto App Hosting.
+
+Check before creating the backend:
+
+```bash
+node -e "console.log(require('./package.json').workspaces ?? 'no workspaces')"
+ls turbo.json nx.json 2>/dev/null
+```
+
+- Workspaces present, no `turbo.json` or `nx.json` → add Turborepo now, following step 6b of `/senternet-site-nextjs-setup` (root `turbo.json`, `turbo` as a root devDependency, one lockfile at the repo root).
+- No workspaces → skip this; a single-package repo needs nothing extra, and adding Turborepo to it buys nothing.
+
+Then note the app's path relative to the repo root (e.g. `apps/site`) — the next step needs it as the root directory, and `apphosting.yaml` belongs in that directory rather than at the repo root.
+
+### N3. Create the backend
+
+```bash
+firebase apphosting:backends:create --project "$PREFIX-prod" --location us-central1
+```
+
+This is an interactive flow: it asks for the GitHub repository to connect (authorizing the Firebase GitHub app the first time), the branch to deploy from (`main`), the backend ID, and the root directory. Use the site name as the backend ID and record it as `$BACKEND_ID`. For a monorepo, the root directory is the app's path (`apps/site`), not `/`.
+
+For CLI deploys, record the same pairing in `firebase.json` so the command knows which app to push:
+
+```json
+{
+  "apphosting": {
+    "backendId": "my-site",
+    "rootDir": "/apps/site",
+    "ignore": ["node_modules", ".git", "firebase-debug.log"]
+  }
+}
+```
+
+`rootDir` is `/` for a single-package repo. This is the one thing `firebase.json` is still for on this track — headers are not read from it.
+
+Confirm it exists before continuing:
+
+```bash
+firebase apphosting:backends:list --project "$PREFIX-prod"
+```
+
+If the CLI subcommand names have shifted, check `firebase apphosting --help` — this surface changes faster than the Hosting one. Never assume the backend was created; always verify with the list command.
+
+For a dev environment, create a second backend on `$PREFIX-dev` connected to the same repo but a `dev` branch, and add `apphosting.dev.yaml` for its config overrides.
+
+### N4. Confirm `apphosting.yaml`
+
+`/senternet-site-nextjs-setup` writes this file. Verify it before the first rollout, because a variable missing here is `undefined` in production even though `.env.production` has it:
+
+- Every browser-read variable is prefixed `NEXT_PUBLIC_` and lists `BUILD` in its `availability`
+- `NEXT_PUBLIC_BASE_URL` matches the canonical host exactly (`https://www.DOMAIN.com`, no trailing slash)
+- Secrets are `secret:` references, never `value:` literals
+
+Create and grant secrets with:
+
+```bash
+firebase apphosting:secrets:set SECRET_NAME --project "$PREFIX-prod"
+firebase apphosting:secrets:grantaccess SECRET_NAME --backend "$BACKEND_ID" --project "$PREFIX-prod"
+```
+
+### N5. Headers and caching
+
+There is no `firebase.json` `headers` array on this track. The security headers and the immutable asset cache belong in `next.config.ts` under `async headers()` — see `/senternet-site-nextjs-setup` step 5. Next already sends `Cache-Control: public, max-age=31536000, immutable` for its own content-hashed output under `/_next/static`, so the `headers()` rules only need to cover hand-placed files in `public/`.
+
+A `firebase.json` on this track holds the `apphosting` block from step N3 and nothing else. If it also has a `hosting` block, that is a leftover — leave it only if the repo genuinely also serves a static site; otherwise remove it so nobody deploys a stale static copy over the backend.
+
+### N6. Deploy scripts
+
+```json
+"deploy:prod": "firebase apphosting:rollouts:create $BACKEND_ID --project \"$PREFIX-prod\" --git-branch main && node scripts/indexnow.mjs"
+```
+
+Pushing to the connected branch also triggers a rollout automatically — the script is for forcing one without a new commit. Wait for the rollout to report `READY` before running IndexNow; submitting URLs for a build that has not gone live yet just tells Bing to crawl the old pages.
+
+### N7. Custom domain
+
+The domain flow lives under the App Hosting backend, not under Hosting. The policy is identical to the Hosting track — `www.DOMAIN.com` canonical, apex redirecting to it — and the same `.firebase-domain.json` artifact is written so upfit runs can detect a completed setup:
+
+```json
+{
+  "apexDomain": "DOMAIN.com",
+  "canonicalHost": "www.DOMAIN.com",
+  "redirectApexToCanonical": true,
+  "status": "pending-dns",
+  "host": "firebase-app-hosting",
+  "backendId": "BACKEND_ID"
+}
+```
+
+Add the domain to the backend, mirror the exact DNS records the console displays, and follow the same "do not stall on `pending-dns`" rule as the Hosting track: continue with other setup steps and re-check verification and SSL later.
+
+### N8. Verify
+
+```bash
+firebase apphosting:backends:list --project "$PREFIX-prod"
+curl -sI https://www.DOMAIN.com/ | head -20
+curl -s https://www.DOMAIN.com/ | grep "<h1"
+```
+
+The last one is the check that matters: the deployed backend must return real page content to a client that runs no JavaScript.

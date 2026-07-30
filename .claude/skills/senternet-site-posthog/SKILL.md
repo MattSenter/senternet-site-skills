@@ -110,3 +110,14 @@ capture('cta_clicked', { location: 'hero' });
 - A production build with a key initializes once and emits the `app_opened` event.
 - The PostHog host appears in the network tab only in production.
 - Spot-check captured event payloads in PostHog — confirm no PII.
+
+## Framework: Next.js track
+
+Same product setup; different wiring.
+
+- `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` replace the `VITE_*` names, read via `process.env`. Both must also appear in `apphosting.yaml` with `BUILD` availability or they will be `undefined` in the deployed bundle.
+- Initialization goes in a `'use client'` provider component mounted from `app/layout.tsx`, not in `main.tsx`. Guard on `typeof window !== 'undefined'` — the layout renders on the server, and calling `posthog.init` there throws.
+- Capture pageviews on `usePathname()` / `useSearchParams()` changes rather than relying on PostHog's automatic capture, which only sees the initial document load under client-side routing. Wrap the `useSearchParams()` reader in `<Suspense>` or it opts the whole route into dynamic rendering.
+- Session replay and autocapture still must stay off for any route that renders PII.
+
+See `/senternet-site-framework` for the full convention map.

@@ -187,3 +187,13 @@ await browser.close();
 - [ ] Single, prominent CTA
 - [ ] Mobile-first design tested at 375px width
 - [ ] Page loads fast on mobile (no heavy images above fold)
+
+## Framework: Next.js track
+
+- The shared `LandingPage` component lives in `components/`; each campaign is `app/lp/<campaign>/page.tsx`.
+- Campaign pages are almost always `noindex`: set `robots: { index: false, follow: true }` in the page's `metadata` **and** mark the route `indexable: false` in `config/routes.mjs` in the same change, so it never reaches the sitemap or IndexNow.
+- Keep the page a server component. The only parts that need `'use client'` are the CTA click tracking and any form.
+- UTM parameters read via `useSearchParams()` must sit inside a `<Suspense>` boundary in a client component, or the whole page opts into dynamic rendering — which turns a static landing page into a cold start on the exact traffic you are paying for.
+- Conversion pixels are wired as described in `/senternet-site-ads-reddit-pixel` on this track.
+
+See `/senternet-site-framework` for the full convention map.

@@ -132,3 +132,22 @@ PSI results frequently differ from local runs — this is expected:
 3. Third-party scripts: Lighthouse never fires user events, so lazy-loaded scripts never load
 
 Rule of thumb: if local shows ≥94 and PSI shows <90, it's almost always CDN cache. Wait and re-run.
+
+## Framework: Next.js track
+
+Same score targets, different levers and a different local target.
+
+**Test against `npm run build && npm start`**, not a served `build/` directory. There is no static output directory to serve.
+
+Skip the Vite-specific work — `manualChunks`, `modulepreload` injection, and the `htmlPlugin` do not exist here; code splitting and preloading are the framework's job. The fixes that actually move the numbers on this track:
+
+- **Shrink the client boundary.** The single largest performance lever is how much of the tree is under `'use client'`. Check the build output's First Load JS per route; a marketing page well above ~100 kB usually has a client directive too high up.
+- **Check the route table.** Pages marked `ƒ` (dynamic) pay a cold start on first visit and will not hit the LCP target from a scale-to-zero backend. Make them static, or accept `minInstances: 1` in `apphosting.yaml` and say so.
+- **`priority` on the LCP image only**, via `next/image`. Multiple priority images compete for bandwidth and delay the one that counts.
+- **`next/font` instead of a font CDN `<link>`.** Self-hosting removes a render-blocking third-party request and the flash that comes with it.
+- **Third-party scripts on `strategy="lazyOnload"`.** Anything on `beforeInteractive` blocks hydration.
+- **Cold starts are a real Lighthouse variable.** A scale-to-zero backend can show a first-request TTFB of a second or more that has nothing to do with the page. Run the audit twice and use the warm number, but do not pretend the cold number is not what a first visitor gets.
+
+Headers and caching fixes go in `next.config.ts` `headers()`, not `firebase.json`.
+
+See `/senternet-site-framework` for the full convention map.

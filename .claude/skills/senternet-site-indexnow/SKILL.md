@@ -100,3 +100,28 @@ It should return the key string. If it returns 404, check that Firebase Hosting 
 - Submit on every deploy, not just when content changes — the overhead is minimal and ensures freshness
 - The key file must match exactly — no trailing newline issues
 - For large sites (1000+ URLs), the API accepts up to 10,000 URLs per request
+
+## Framework: Next.js track
+
+Two changes on the `nextjs` track; everything else about the key file and the submission payload is identical.
+
+**1. The URL list comes from the route manifest, not from a built sitemap file.** There is no `public/sitemap.xml` on disk to parse — the sitemap is generated per request. Read `config/routes.mjs` directly:
+
+```js
+import { indexableRoutes } from '../config/routes.mjs';
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+const urlList = indexableRoutes().map(r => `${baseUrl}${r.path === '/' ? '' : r.path}`);
+```
+
+The key file itself still lives at `public/<key>.txt` and is served from the site root unchanged.
+
+**2. It runs after the rollout, not after `firebase deploy`.** App Hosting deploys asynchronously, so submitting URLs the moment the command returns tells Bing to crawl the *previous* build. Wait for the rollout to report `READY` first:
+
+```json
+"deploy:prod": "firebase apphosting:rollouts:create $BACKEND_ID --project \"$PREFIX-prod\" --git-branch main && node scripts/indexnow.mjs"
+```
+
+If the deploy happens by pushing to the connected branch rather than through this script, run `node scripts/indexnow.mjs` manually once the rollout is live, or move the submission into the CI job that watches the rollout.
+
+See `/senternet-site-framework` for the full convention map.

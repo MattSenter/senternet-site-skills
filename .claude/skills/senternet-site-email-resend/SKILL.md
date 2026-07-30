@@ -322,3 +322,33 @@ A successful notification will show no errors in the logs. If there is a `403 Fo
 - Idempotency keys on `sendResendEmail` (using `event.id` as the prefix) prevent duplicate emails if the Cloud Function retries.
 - If re-running this skill on a project that already has `functions/`, skip step 6 and only update `index.ts` if the user confirms.
 - If the site does not yet have Firestore enabled, Firebase will prompt to enable it during the first deploy with a Firestore trigger.
+
+## Framework: Next.js track
+
+Do not add a `functions/` directory to a Next.js site. The send path is a route handler in the same app:
+
+```ts
+// app/api/contact/route.ts
+import { NextResponse } from 'next/server';
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  // validate, then call Resend with process.env.RESEND_API_KEY
+  return NextResponse.json({ ok: true });
+}
+```
+
+- **The API key is a Secret Manager reference in `apphosting.yaml`**, with `RUNTIME` availability only. Never `NEXT_PUBLIC_`-prefix it, and never give it `BUILD` availability — either one ships it to the browser.
+  ```yaml
+  env:
+    - variable: RESEND_API_KEY
+      secret: resend-api-key
+      availability: [RUNTIME]
+  ```
+  Create and grant it with `firebase apphosting:secrets:set resend-api-key` and `firebase apphosting:secrets:grantaccess resend-api-key --backend "$BACKEND_ID"`.
+- **Route handlers are server-only by default** — the key never reaches the client bundle as long as it is read inside the handler and not passed through props.
+- **No `firebase.json` rewrites and no `hosting,functions` deploy target.** The endpoint is just a path in the app.
+- Rate limiting and validation still matter: a public POST handler that sends mail is an open relay if it does neither.
+- For local development, put the key in `.env.local` (untracked) — the emulator/secret plumbing of the Functions track does not apply here.
+
+See `/senternet-site-framework` for the full convention map.

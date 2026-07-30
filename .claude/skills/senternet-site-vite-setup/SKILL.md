@@ -7,6 +7,8 @@ description: Scaffold a production-ready Vite + React + TypeScript site.
 
 Initialize a production-ready Vite + React + TypeScript project for a marketing site.
 
+This is the `vite` track — static output on Firebase Hosting, with Puppeteer prerendering for crawlers. It is the default track and the right one for most marketing sites. If the site needs server rendering, route handlers, middleware, or on-demand regeneration, use `/senternet-site-nextjs-setup` instead. `/senternet-site-framework` has the decision guidance and the convention map between the two.
+
 ## Steps
 
 1. Ask the user which local dev port to use. Default is `3000`. Explain that they may want a different port if they run multiple sites locally (e.g. 3001, 3002, 3003). Use their answer as `$PORT` throughout the rest of the setup.
@@ -98,6 +100,15 @@ Initialize a production-ready Vite + React + TypeScript project for a marketing 
 12. Create `public/` with `favicon.png`, `favicon.svg`, `favicon.ico`, and `apple-touch-icon.png` placeholders.
 
 13. Create `src/assets/` for optimized images.
+
+14. Write `.site-framework.json` in the project root so every later skill and every upfit run knows which track this site is on without re-deriving it:
+    ```json
+    {
+      "framework": "vite",
+      "renderMode": "static-prerender",
+      "host": "firebase-hosting"
+    }
+    ```
 
 ## Output
 

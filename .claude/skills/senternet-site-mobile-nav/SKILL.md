@@ -283,3 +283,12 @@ Chrome DevTools device toolbar at iPhone width (e.g., iPhone 14):
 5. With the About sub-list expanded, tap any sub-section anchor. The page should scroll to that section with the heading visible (not clipped under the sticky header), and the menu (plus expansion state) should reset.
 6. Resize past the `md` breakpoint. The hamburger should disappear and the horizontal nav should return.
 7. Lighthouse mobile accessibility audit should still pass (hamburger and chevron buttons each have an accessible name, expanded state, and target tap area ≥ 44×44 px).
+
+## Framework: Next.js track
+
+The markup, breakpoints, scroll-lock, and nested-anchor behavior are unchanged. Two adjustments:
+
+- The nav is stateful, so it must be a `'use client'` component — but keep it a *leaf*. Extract just the toggle and panel into `components/MobileNav.tsx` with the directive, and leave `app/layout.tsx` and the surrounding header as server components. Marking the layout `'use client'` to get a hamburger working ships the entire site to the browser.
+- Use `<Link>` from `next/link` for nav links, and close the menu on route change by keying an effect on `usePathname()` — client-side navigation does not unmount the nav, so without this the panel stays open over the new page.
+
+See `/senternet-site-framework` for the full convention map.

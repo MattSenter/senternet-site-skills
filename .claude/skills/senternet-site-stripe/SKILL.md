@@ -759,3 +759,31 @@ Once verified in test mode, repeat step 5 with live keys (`sk_live_...`, `pk_liv
 - **Subscriptions:** enable the Customer Portal in the Stripe Dashboard and surface its link in the client app so users can manage or cancel. The `refreshToken` endpoint is what keeps a desktop app's entitlement in sync with subscription status.
 - **Order recovery** treats Stripe as the source of truth: it reissues whatever the customer already paid for, so it works equally for a lost JWT license or an expired signed download URL — only the phase-2 reissue line changes. Keep premail's abuse protections (hashed-email doc id, 15-min TTL, 5-attempt cap, constant-time response, never-enumerate). The `recoverOtp` collection and (for `jwt`) the `activations` collection both need Firestore — Firebase prompts to enable it on first deploy if it isn't already on.
 - **Re-run safe:** if `functions/` already exists (e.g. Resend ran first), append the Stripe exports and secrets rather than overwriting `index.ts`. Only scaffold `functions/` in step 7 when it's absent.
+
+## Framework: Next.js track
+
+Checkout and webhook handling move from Firebase Functions into route handlers in the same app. The Stripe product setup, price creation, and fulfillment logic are unchanged.
+
+- `app/api/checkout/route.ts` — creates the Checkout Session or Payment Intent server-side and returns the URL or client secret.
+- `app/api/stripe-webhook/route.ts` — receives events and fulfills.
+
+**The webhook must read the raw body.** Signature verification runs over the exact bytes Stripe sent, so parse the body as text first and never as JSON:
+
+```ts
+export async function POST(request: Request) {
+  const payload = await request.text();
+  const signature = request.headers.get('stripe-signature')!;
+  const event = stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET!);
+  // ... fulfill
+}
+```
+
+Other differences:
+
+- `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are `secret:` refs in `apphosting.yaml` with `RUNTIME` availability only. Only the publishable key may be `NEXT_PUBLIC_`-prefixed.
+- No `firebase.json` rewrites, no `functions/` directory, no `hosting,functions` deploy target.
+- Point the Stripe webhook endpoint at `https://www.DOMAIN.com/api/stripe-webhook`, and register a separate endpoint for the dev backend.
+- Route handlers are dynamic by definition; that is expected here and does not indicate a misconfigured page.
+- Receipt-email fulfillment goes through the same route-handler pattern as `/senternet-site-email-resend` on this track, not through a Cloud Function.
+
+See `/senternet-site-framework` for the full convention map.

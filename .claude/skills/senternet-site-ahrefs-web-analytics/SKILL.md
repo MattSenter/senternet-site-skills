@@ -157,3 +157,24 @@ After deploying to production:
 - Filter by `analytics.ahrefs.com`
 - Confirm the script loads after the page `load` event fires, not during initial HTML parse
 - Check the Ahrefs Web Analytics dashboard to confirm visits are arriving
+
+## Framework: Next.js track
+
+No `index.html` and no `htmlPlugin` on this track. Load the analytics script with `next/script` from `app/layout.tsx`, gated on the env var:
+
+```tsx
+import Script from 'next/script';
+
+const ahrefsKey = process.env.NEXT_PUBLIC_AHREFS_KEY;
+
+{ahrefsKey && (
+  <Script src="https://analytics.ahrefs.com/analytics.js" data-key={ahrefsKey} strategy="lazyOnload" />
+)}
+```
+
+- `NEXT_PUBLIC_AHREFS_KEY` replaces the `VITE_*` name, and must also be listed in `apphosting.yaml` with `BUILD` availability.
+- `strategy="lazyOnload"` gives the same off-the-critical-path loading the Vite track gets from its `load`-event deferral.
+- Leave the key empty in `.env.development` so local traffic never reports.
+- No prerender strip step is needed.
+
+See `/senternet-site-framework` for the full convention map.

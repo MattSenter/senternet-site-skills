@@ -133,3 +133,14 @@ Check mobile performance in Chrome DevTools:
 2. Set throttling to "Slow 3G" and device to "Moto G Power" (or similar low-end mobile)
 3. Reload and check what images downloaded
 4. Any image that's `display: none` should not appear in the waterfall — if it does, prevent the download with conditional rendering
+
+## Framework: Next.js track
+
+The mobile hero, lazy loading, and reduced-motion rules all still apply; the implementation shifts to framework features.
+
+- Responsive hero variants and `loading="lazy"` come from `next/image` with a correct `sizes` prop, rather than hand-generated `-sm.webp` files and manual `<picture>` sources. Keep `priority` on the hero only.
+- There is no `index.html` to add a `<link rel="preload" media="...">` to. `priority` on the LCP image emits the preload for you.
+- Animation disabling on mobile stays a CSS concern (`@media (prefers-reduced-motion)` and width-based rules) — no change.
+- Any component gating on `window.matchMedia` or viewport width must be `'use client'` and read the value in an effect. Reading it during render breaks the server render.
+
+See `/senternet-site-framework` for the full convention map.

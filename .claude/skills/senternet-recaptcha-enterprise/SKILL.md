@@ -109,3 +109,17 @@ Confirm that:
 - Host restrictions are enforced by `--domains`.
 - Only use `--allow-all-domains` if you have a very large host list and understand the security tradeoff.
 - Testing keys created with `--testing-score` are meant for local testing and should not be used for production traffic.
+
+## Framework: Next.js track
+
+Key creation, the host-scoped local/dev/prod split, and the score thresholds are unchanged — those are Google Cloud concerns, not framework concerns.
+
+Wiring differences:
+
+- The site key is public: `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`, and it must also appear in `apphosting.yaml` with `BUILD` availability.
+- Token generation runs in the browser, so the component that calls `grecaptcha.enterprise.execute()` is `'use client'`.
+- **Assessment happens in a route handler** (`app/api/<form>/route.ts`), not a Cloud Function. Verify the token there before doing anything with the submission.
+- Any API key or service credential used for the assessment call is a `secret:` ref in `apphosting.yaml` with `RUNTIME` availability only — never `NEXT_PUBLIC_`.
+- If a CSP is in place, reCAPTCHA needs `https://www.google.com` and `https://www.gstatic.com` in `script-src` and `frame-src`.
+
+See `/senternet-site-framework` for the full convention map.

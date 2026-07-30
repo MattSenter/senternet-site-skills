@@ -289,3 +289,17 @@ const logoBase64 = readFileSync(path.resolve(__dirname, '../public/logo.png')).t
 // In the SVG string:
 `<image href="data:image/png;base64,${logoBase64}" x="60" y="480" width="120" height="120" />`
 ```
+
+## Framework: Next.js track
+
+The generation script is unchanged: Sharp renders SVG to PNG, the files land in `public/share/`, and they get committed. Only the reference changes.
+
+- Point at them from each page's `metadata`, not from `index.html`:
+  ```tsx
+  openGraph: { images: [{ url: '/share/about.png', width: 1200, height: 630, alt: '...' }] }
+  ```
+  These resolve against `metadataBase` in `app/layout.tsx`. Without `metadataBase`, they ship as relative URLs and no crawler can fetch them.
+- Add the share-image block for a new page in the same change that adds the page and its `config/routes.mjs` entry.
+- Next also supports generating OG images at request time (`opengraph-image.tsx` with `ImageResponse`). Prefer the pre-generated static PNGs anyway: crawlers fetch OG images aggressively, and a static file costs nothing to serve while a runtime route costs an invocation per fetch. Reach for `ImageResponse` only when the image genuinely depends on data that is not known at build time.
+
+See `/senternet-site-framework` for the full convention map.

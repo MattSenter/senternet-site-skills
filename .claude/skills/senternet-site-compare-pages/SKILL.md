@@ -179,3 +179,12 @@ Add entries to `scripts/generate-share-images.mjs` for each compare page. Use th
 - **CTA**: link to sign-up or your main CTA, not just the home page
 - **Internal links**: link to 2–3 other compare pages ("Also considering [Other Competitor]? See our comparison.")
 - **Update annually**: refresh the year in the title and revisit feature accuracy
+
+## Framework: Next.js track
+
+- `app/vs/[competitor]/page.tsx` and `app/alternatives/[competitor]/page.tsx`, each exporting `generateStaticParams()` from the competitor data file so every page is built statically.
+- `generateMetadata({ params })` supplies the per-competitor title, description, canonical, and OG image. These pages live or die on unique metadata, so derive it from the data rather than templating one description across all of them.
+- Import the same competitor list into `app/sitemap.ts` so every comparison URL is covered without a second array.
+- The content, positioning, and factual-accuracy rules above are unchanged.
+
+See `/senternet-site-framework` for the full convention map.

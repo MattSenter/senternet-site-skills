@@ -266,3 +266,17 @@ Once the blog exists, a scheduled Claude Code routine can write each new post, s
 ### Cross-account amplification (optional)
 
 To have a personal account quote-tweet a brand post on X: after the brand post is `sent`, read its `externalLink` (`https://x.com/<id>/status/<TWEET_ID>`), then create a post on the personal channel whose `text` is a short comment followed by `https://x.com/<brand-handle>/status/<TWEET_ID>`. Putting the tweet URL in the text is what makes X render a **quote-tweet with commentary**; Buffer's `metadata.twitter.retweet` field only does a plain retweet (no comment). Likes are not possible via Buffer at all: there is no like mutation.
+
+## Framework: Next.js track
+
+Same content model, same SEO requirements, different route mechanics.
+
+- `app/blog/page.tsx` — the index. `app/blog/[slug]/page.tsx` — the post. `app/blog/tag/[tag]/page.tsx` — tag pages.
+- Export `generateStaticParams()` from each dynamic route so every post and tag page is rendered at build time rather than per request.
+- Export `generateMetadata({ params })` per post for title, description, canonical, and OG image. Add `Article` JSON-LD in the post page itself.
+- Feed `app/sitemap.ts` from the same post list that `generateStaticParams` uses — import it, do not maintain a parallel array. Post URLs then reach IndexNow automatically.
+- There is no prerender ROUTES array to extend, and adding a post does not require touching a build script.
+- Publishing a post still requires a rollout, since the pages are built. If posts need to go live without a deploy, use `revalidate` on the route (ISR) and say so explicitly rather than switching the pages to dynamic.
+- Share images: pre-generate per post into `public/share/blog/<slug>.png` with the Sharp script and reference them from `generateMetadata`.
+
+See `/senternet-site-framework` for the full convention map.

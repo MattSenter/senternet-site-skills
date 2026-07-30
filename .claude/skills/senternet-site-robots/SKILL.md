@@ -61,3 +61,25 @@ In Google Search Console → Settings → robots.txt Tester, verify that:
 - The sitemap reference in `robots.txt` is used by crawlers to discover new pages; keep it updated when the sitemap filename changes
 - For multilingual sites with `/es/` paths, these are typically indexed fine by default — no special Disallow needed
 - Development/staging Firebase projects should be blocked from Google indexing via a `noindex` meta tag in the HTML, not via `robots.txt`
+
+## Framework: Next.js track
+
+On the `nextjs` track, robots.txt is a route rather than a static file: `app/robots.ts`, served at `/robots.txt`. The content rules above are unchanged.
+
+```ts
+// app/robots.ts
+import type { MetadataRoute } from 'next';
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [{ userAgent: '*', allow: '/' }],
+    sitemap: `${baseUrl}/sitemap.xml`,
+  };
+}
+```
+
+Do not also ship `public/robots.txt` — the static file would win and shadow this route, so the two would silently diverge. Verify with `npm start && curl -s localhost:$PORT/robots.txt` and confirm the sitemap URL uses the canonical host, not `localhost`, once `NEXT_PUBLIC_BASE_URL` is set for production.
+
+See `/senternet-site-framework` for the full convention map.

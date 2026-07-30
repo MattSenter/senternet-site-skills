@@ -158,3 +158,11 @@ Then:
 - The footer link navigates to the page.
 - The page links to `/privacy` and does not duplicate legal language.
 - Every section on the page corresponds to a category the user actually answered — no filler for passed topics.
+
+## Framework: Next.js track
+
+The interview and the page content are unchanged. Placement: `app/ai-disclosure/page.tsx` with its own `export const metadata`, plus an entry in `config/routes.mjs`.
+
+Like Privacy and Terms, this page is usually `noindex` — set `robots: { index: false, follow: true }` in its `metadata` and mark it `indexable: false` in the manifest in the same change, so it renders and stays reachable by direct link without being advertised in the sitemap.
+
+See `/senternet-site-framework` for the full convention map.

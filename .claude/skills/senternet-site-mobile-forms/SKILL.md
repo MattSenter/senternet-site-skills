@@ -199,3 +199,11 @@ grep -rn '<input\|<textarea\|<select' src/ --include="*.tsx" --include="*.jsx"
 ```
 
 For each result, check the field's semantic type and apply the attributes from the reference above.
+
+## Framework: Next.js track
+
+The input attributes (`inputMode`, `autoComplete`, `autoCapitalize`, `autoCorrect`, `enterKeyHint`, type selection) are plain HTML and apply verbatim.
+
+The only difference: a form with client-side state or an `onSubmit` handler must live in a `'use client'` component — keep it a leaf so the surrounding page stays a server component. A form that posts to a route handler (`app/api/<name>/route.ts`) or a server action needs no directive at all.
+
+See `/senternet-site-framework` for the full convention map.

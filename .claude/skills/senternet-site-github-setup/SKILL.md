@@ -338,3 +338,13 @@ git push -u origin main
 - When creating branches later in this project, always follow the established convention: solo → `feature/` or `fix/`; team → `name/`; append ticket ID when available
 - The GitHub MCP server is configured globally in `~/.claude.json` — it applies to all projects on this machine, not just this one
 - The PAT stored in `~/.claude.json` grants repo access; treat that file like a credentials file and never commit it
+
+## Framework: Next.js track
+
+On the `nextjs` track this step is **required, not optional, and must run before Firebase setup.** Firebase App Hosting builds from a connected GitHub repository and deploys on pushes to a branch, so `firebase apphosting:backends:create` cannot complete without a remote and at least one pushed commit.
+
+Order of operations: `git init` → `.gitignore` → create the GitHub repo → push `main` → then run `/senternet-site-firebase`.
+
+`.gitignore` additions specific to this track: `.next/`, `next-env.d.ts` is committed (not ignored), and `.env*.local` stays untracked. Everything else about the recommended ignore list is unchanged.
+
+See `/senternet-site-framework` for the full convention map.

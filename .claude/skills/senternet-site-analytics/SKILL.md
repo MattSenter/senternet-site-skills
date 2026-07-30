@@ -28,3 +28,9 @@ Quick guidance when the user is unsure:
 - When multiple providers are chosen, hand off to each setup skill in turn.
 - Do not repeat or preview the target skill's setup steps here.
 - Do not explain the options at length unless the user explicitly asks for a comparison.
+
+## Framework note
+
+Provider selection is framework-independent — the same three options apply on both tracks. Only the wiring differs, and each provider skill has a **Framework: Next.js track** section covering it. The one rule worth knowing before you choose: on the Next.js track every client-read variable is `NEXT_PUBLIC_*` and must also be listed in `apphosting.yaml` with `BUILD` availability, or the provider silently never initializes in production.
+
+See `/senternet-site-framework` for the full convention map.

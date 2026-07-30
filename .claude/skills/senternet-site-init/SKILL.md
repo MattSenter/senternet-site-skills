@@ -152,3 +152,58 @@ After writing all three files:
 1. Confirm `AGENTS.md` has no placeholder text — every value should be the real project value
 2. Confirm `CLAUDE.md` contains only `See AGENTS.md for rules`
 3. Confirm `README.md` has correct domain, project names, and script list
+
+## Framework: Next.js track
+
+Docs that describe the wrong track are worse than no docs — every trap listed in the Vite version is either absent or inverted here. Detect the track from `.site-framework.json` before writing anything.
+
+### Read these instead
+
+`package.json`, `next.config.ts`, `apphosting.yaml`, `app/layout.tsx`, `config/routes.mjs`, `app/sitemap.ts`, `app/robots.ts`, `.firebaserc`, `.env.*`, and the `app/` tree (every directory containing a `page.tsx` is a route).
+
+### Tech stack section
+
+- **Next.js (App Router) + TypeScript** — default `.next/` output, never overridden
+- **Tailwind CSS v4** — imported via `@import "tailwindcss"` in `app/globals.css`
+- **Firebase App Hosting** — SSR on Cloud Run, deployed from the connected git branch
+- **Built-in static rendering** — no prerender step exists
+
+### Critical architectural decisions section
+
+Replace the Vite traps entirely. The ones that cost hours on this track:
+
+**No `hydrateRoot`, no `app-ready`, no `window.__PRERENDERING__`.** These are Vite-track artifacts. Finding one in this repo means a Vite-track step was applied to the wrong project.
+
+**Server components by default.** `'use client'` belongs on the leaf that needs state or handlers, never on a page. Pushing it up the tree ships the whole subtree to the browser and gives back the main reason to be on this framework.
+
+**Static vs dynamic rendering.** `npm run build` prints a route table; marketing routes must be `○` (static), not `ƒ` (dynamic). A stray `cookies()`, `headers()`, or unsuspended `useSearchParams()` read silently flips a page to per-request rendering and a cold start.
+
+**`metadataBase` in `app/layout.tsx`.** Without it, relative OG image URLs ship as relative paths that crawlers cannot fetch.
+
+**`apphosting.yaml` is the real production env.** A variable in `.env.production` but not in `apphosting.yaml` is `undefined` in the deployed build. Client-read variables need the `NEXT_PUBLIC_` prefix *and* `BUILD` availability. Secrets are `secret:` refs with `RUNTIME` availability only.
+
+**Headers live in `next.config.ts`, not `firebase.json`.** `firebase.json` `headers` is not read on this track.
+
+### Build pipeline section
+
+```
+npm run build      → next build (renders static HTML for every static route)
+npm run deploy:prod → firebase apphosting:rollouts:create → wait for READY → node scripts/indexnow.mjs
+```
+
+Note that pushing to the connected branch also triggers a rollout.
+
+### Page-add rule section
+
+Use the **one-file rule**, not the three-file rule:
+
+1. `app/<segment>/page.tsx` — the page plus its own `export const metadata`
+2. `config/routes.mjs` — add the route (`indexable: false` for legal pages)
+
+`app/sitemap.ts`, `app/robots.ts`, and `scripts/indexnow.mjs` all read the manifest, so there is no third list and no prerender array.
+
+### README section
+
+Quick start is `npm run dev`; the local production check is `npm run build && npm start` (not a served `build/` directory). Keep the Lighthouse targets as-is.
+
+See `/senternet-site-framework` for the full convention map.

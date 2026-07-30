@@ -145,3 +145,12 @@ In Reddit Ads → Pixels, click "Test Pixel". Visit your site and confirm events
 - The pixel only loads when `VITE_REDDIT_PIXEL_ID` is set — empty on dev, so no accidental test events
 - The bootstrap stub in `index.html` ensures `window.rdt` exists before React hydrates, so tracking calls in `onClick` handlers never throw
 - Reddit pixel does NOT fire from prerendered HTML (the script is stripped) — it fires when the live user's browser loads and React hydrates
+
+## Framework: Next.js track
+
+- `NEXT_PUBLIC_REDDIT_PIXEL_ID` replaces `VITE_REDDIT_PIXEL_ID`, and must also be listed in `apphosting.yaml` with `BUILD` availability.
+- The bootstrap stub and the pixel script both load through `next/script` in `app/layout.tsx` with `strategy="lazyOnload"`, gated on the env var being non-empty. There is no `index.html` stub and no prerender strip step.
+- The `RedditPixel` component that fires conversion events must be a `'use client'` component, and page-view tracking must key off `usePathname()` — client-side navigation does not reload the pixel.
+- Campaign landing pages are usually `noindex`; that is set in the page's `metadata`, not by the pixel wiring.
+
+See `/senternet-site-framework` for the full convention map.

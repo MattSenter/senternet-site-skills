@@ -114,10 +114,10 @@ If DNS or certificate issuance is still pending, the workflow should continue wi
 
 - Firebase does not have a reliable CLI flow for linking a Firebase project to Google Analytics in this workflow, so the GA link step must be completed manually in the Firebase Console before the GA skill can continue.
 
-Claude will ask for your app name, domain, design export if you have one (zip/directory/HTML from Claude Design), and other basics. If you do not have a design export, it will create a barebones Hello World site instead. The primary brand color is detected automatically from the design's CSS variables when a design is provided. It then executes all skills in sequence across these phases:
+Claude will ask which framework track to use (see below), then for your app name, domain, design export if you have one (zip/directory/HTML from Claude Design), and other basics. If you do not have a design export, it will create a barebones Hello World site instead. The primary brand color is detected automatically from the design's CSS variables when a design is provided. It then executes all skills in sequence across these phases:
 
 1. **Prerequisites** — gcloud/Firebase auth
-2. **Phase 1** — Vite scaffold, design system, Firebase Hosting
+2. **Phase 1** — framework scaffold, design system, Firebase Hosting or App Hosting
 3. **Phase 2** — SEO (meta tags, robots.txt, sitemap, IndexNow)
 4. **Phase 3** — Analytics, email, and Reddit pixel (GA4, PostHog, or Ahrefs Web Analytics, Resend, Reddit pixel)
 5. **Phase 4** — Build pipeline (Puppeteer prerendering)
@@ -130,9 +130,11 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 | Command | What it does |
 |---|---|
 | `/senternet-site-gcloud-auth` | Authenticate gcloud and Firebase CLI (run once per machine before firebase/GA skills) |
+| `/senternet-site-framework` | The framework contract — pick a track, detect the one an existing repo uses, and translate every convention between Vite and Next.js |
 | `/senternet-site-design` | Convert a Claude Design HTML export into React components with a full design system |
-| `/senternet-site-vite-setup` | Scaffold Vite + React + TypeScript with optimal config |
-| `/senternet-site-firebase` | Firebase Hosting with caching, security headers, multi-env deploy, and custom domain handoff — creates or links Firebase projects after auth and confirmation |
+| `/senternet-site-vite-setup` | Scaffold Vite + React + TypeScript with optimal config (the `vite` track) |
+| `/senternet-site-nextjs-setup` | Scaffold Next.js App Router + TypeScript for Firebase App Hosting (the `nextjs` track) |
+| `/senternet-site-firebase` | Firebase Hosting (Vite) or Firebase App Hosting (Next.js) with caching, security headers, multi-env deploy, and custom domain handoff — creates or links Firebase projects after auth and confirmation |
 | `/senternet-site-favicon` | Favicon and app icon generation for browser tabs, bookmarks, and mobile home screens |
 | `/senternet-site-metatags` | Full SEO meta tags, OG, Twitter Card, schema.org, MetaTags component |
 | `/senternet-site-robots` | robots.txt pointing to sitemap |
@@ -164,22 +166,44 @@ Claude will ask for your app name, domain, design export if you have one (zip/di
 
 ## Generated site stack
 
-Skills produce sites with this tech stack:
+Sites are built on one of two **framework tracks**, chosen at the start of `/senternet-create-site` and recorded in `.site-framework.json` so later runs never have to guess. `/senternet-site-framework` holds the decision guidance and the full convention map between them.
+
+### `vite` track (default)
 
 - **Vite + React + TypeScript** — scaffolded via `senternet-site-vite-setup`
 - **Tailwind CSS v4** — imported via `@import "tailwindcss"` in `src/index.css`
 - **Firebase Hosting** — static host, `build/` as public dir (not `dist/`)
 - **Puppeteer prerendering** — every route gets a real HTML snapshot at build time
 
-### The three-file rule
+Static files on a CDN: no cold starts, cheapest to run, and every skill targets it first. Right for most marketing sites.
 
-Every new page/route must update all three of these files together:
+### `nextjs` track
+
+- **Next.js (App Router) + TypeScript** — scaffolded via `senternet-site-nextjs-setup`
+- **Tailwind CSS v4** — imported via `@import "tailwindcss"` in `app/globals.css`
+- **Firebase App Hosting** — SSR on Cloud Run, deployed from a connected git branch
+- **Built-in static rendering** — no prerender step, and `config/routes.mjs` is the single source for sitemap, robots, and IndexNow
+
+Choose it when the site genuinely needs server rendering, route handlers instead of Cloud Functions, middleware and nonce-based CSP, or on-demand regeneration. The cost is cold starts and a heavier build.
+
+If the repo uses npm/pnpm/yarn workspaces, App Hosting also requires a supported monorepo tool on top of them (Turborepo or Nx) — workspaces alone fail to build. The Next.js setup skill covers the `turbo.json` layout and the backend root-directory setting.
+
+### The page-add rule
+
+**Vite — the three-file rule.** Every new page/route must update all three together:
 
 1. `src/App.tsx` — add the `<Route>`
 2. `scripts/prerender.mjs` — add to `ROUTES` array
 3. `scripts/generate-sitemap.mjs` — add to `ROUTES` array
 
 Missing any one means the page has no static HTML for crawlers, no sitemap entry, or both.
+
+**Next.js — the one-file rule.** Every new page is a directory plus a manifest entry:
+
+1. `app/<segment>/page.tsx` — the page and its `export const metadata`
+2. `config/routes.mjs` — add the route (`indexable: false` for legal pages)
+
+`app/sitemap.ts`, `app/robots.ts`, and `scripts/indexnow.mjs` all read the manifest, so there is no third list to keep in sync.
 
 ## Adding a skill
 

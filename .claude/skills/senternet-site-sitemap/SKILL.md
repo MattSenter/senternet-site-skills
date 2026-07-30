@@ -183,3 +183,38 @@ After generating:
 - Open `public/sitemap.xml` and verify route count
 - Submit to Google Search Console: Sitemaps → Add sitemap
 - The IndexNow script reads from this file automatically — no extra steps needed
+
+## Framework: Next.js track
+
+On the `nextjs` track there is no generator script and no committed `public/sitemap.xml`. The sitemap is a route: `app/sitemap.ts`, served at `/sitemap.xml`. Everything above about priorities, changefreq, and never listing `noindex` routes still applies — only the mechanism changes.
+
+Use the route manifest at `config/routes.mjs` (created by `/senternet-site-nextjs-setup`) as the single source of truth, so the sitemap, `app/robots.ts`, and `scripts/indexnow.mjs` cannot disagree:
+
+```ts
+// app/sitemap.ts
+import type { MetadataRoute } from 'next';
+import { indexableRoutes } from '@/config/routes.mjs';
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const lastModified = new Date();
+  return indexableRoutes().map(route => ({
+    url: `${baseUrl}${route.path === '/' ? '' : route.path}`,
+    lastModified,
+    changeFrequency: route.changefreq,
+    priority: route.priority,
+  }));
+}
+```
+
+Differences to hold on to:
+
+- **The noindex rule is enforced by data, not by memory.** A route marked `indexable: false` in `config/routes.mjs` is filtered out here automatically. Set that flag in the same change that sets `robots: { index: false }` in the page's `metadata`.
+- **Dynamic routes** (blog posts, comparison pages) come from the same list that feeds their `generateStaticParams`. Import that list into `sitemap.ts` and concatenate rather than hand-maintaining a second copy.
+- **Multilingual** `hreflang` alternates go in the `alternates.languages` field of each sitemap entry, and must match `alternates.languages` in the page's `metadata`.
+- **Nothing is wired into `build:prod`** — there is no generate step. Verify with `npm start && curl -s localhost:$PORT/sitemap.xml`.
+- **Do not also ship `public/sitemap.xml`.** Two sources for the same path is a silent conflict where the static file wins and quietly goes stale.
+- For 100+ programmatic pages, `app/sitemap.ts` can export `generateSitemaps()` to emit a sitemap index instead of one large file.
+
+See `/senternet-site-framework` for the full convention map.

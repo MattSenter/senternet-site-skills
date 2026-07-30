@@ -199,3 +199,69 @@ Firebase Hosting is a CDN serving pre-built static files. Headers in `firebase.j
 For a static host, **SHA-256 hashes are the correct nonce equivalent.** The script content is deterministic (the same on every deploy), so the hash is stable, and the browser verifies the content hasn't been tampered with — which is exactly the security property nonces provide in a dynamic context.
 
 If the project later adopts SSR (e.g. via Firebase Functions or Cloud Run serving the HTML), nonces become viable: generate `crypto.randomBytes(16).toString('base64')` per request, stamp it onto each `<script nonce="...">` in the rendered HTML, and set the header dynamically. At that point, the hash approach can be dropped entirely.
+
+## Framework: Next.js track
+
+The "Why not nonces?" section above ends by noting that nonces become viable once the site is server-rendered. On the `nextjs` track, that has already happened — **use nonces, not hashes.**
+
+Firebase App Hosting serves Next.js from Cloud Run, so every HTML response is generated per request and can carry a fresh nonce. That removes the hash list entirely: no `openssl dgst` step, no re-hashing when an inline script changes, and no risk of a stale hash silently blocking a script.
+
+### 1. Generate the nonce in `middleware.ts`
+
+```ts
+import { NextResponse, type NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const csp = [
+    `default-src 'self'`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https:`,
+    `style-src 'self' 'unsafe-inline'`,
+    `img-src 'self' data:`,
+    `connect-src 'self'`,
+    `font-src 'self'`,
+    `frame-src 'none'`,
+    `object-src 'none'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+  ].join('; ');
+
+  const headers = new Headers(request.headers);
+  headers.set('x-nonce', nonce);
+  headers.set('Content-Security-Policy', csp);
+
+  const response = NextResponse.next({ request: { headers } });
+  response.headers.set('Content-Security-Policy', csp);
+  return response;
+}
+
+export const config = {
+  matcher: [{ source: '/((?!_next/static|_next/image|favicon.ico).*)', missing: [{ type: 'header', key: 'next-router-prefetch' }] }],
+};
+```
+
+The nonce goes out on both the request headers (so the page can read it) and the response header (so the browser enforces it).
+
+### 2. Read it in the layout and pass it to every `<Script>`
+
+```tsx
+import { headers } from 'next/headers';
+
+const nonce = (await headers()).get('x-nonce') ?? undefined;
+// <Script nonce={nonce} ... />
+```
+
+Next also stamps the nonce onto its own inline bootstrap scripts automatically once it sees the CSP header, which is the part a static host cannot do.
+
+### 3. Per-service directives are unchanged
+
+The GA4, Reddit Pixel, Ahrefs, Firebase, and Google Fonts extension lists above apply verbatim. `'strict-dynamic'` lets a nonced loader script pull in its own dependencies, which is what makes the third-party tag managers work without listing every CDN host.
+
+### Caveats specific to this track
+
+- **Reading headers opts routes into dynamic rendering.** Only the layout should read the nonce, and check the build's route table afterward — if pages flipped from `○` to `ƒ`, the nonce read leaked into a page that should be static. If keeping pages static matters more than nonces on those routes, fall back to the hash approach for them.
+- **Do not put the CSP in `firebase.json`.** It is not read on this track. Static headers, if you want them alongside middleware, go in `next.config.ts` `headers()`.
+- **Report-only first still applies.** Ship `Content-Security-Policy-Report-Only` from the middleware, browse the deployed dev backend watching the console, then rename the header key.
+- Verify against the deployed backend, not `next dev`: `curl -sI https://www.DOMAIN.com/ | grep -i content-security-policy`. Two requests should return two different nonces — an identical nonce on every response means the value is being cached and is no better than `'unsafe-inline'`.
+
+See `/senternet-site-framework` for the full convention map.

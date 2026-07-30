@@ -142,3 +142,18 @@ git commit -m "Convert site images to WebP"
 ```
 
 Confirm `git status` is clean before finishing.
+
+## Framework: Next.js track
+
+Most of this skill is redundant here. `next/image` produces WebP/AVIF and a responsive `srcset` on demand, so the conversion script and the hand-written `<picture>` element are solving a problem the framework already solves — and a hand-rolled `<picture>` bypasses the optimizer entirely.
+
+Do this instead:
+
+- Use `next/image` for every content image, with explicit `width`/`height` (or `fill` plus a `sizes` prop). The explicit dimensions are what prevent layout shift; `fill` without `sizes` makes the browser download the largest candidate.
+- Set `priority` on the LCP image only. It preloads that one image; setting it on several defeats the purpose.
+- `formats: ['image/avif', 'image/webp']` in `next.config.ts` controls what gets served.
+- Keep a conversion script only for images the optimizer never touches: OG/share PNGs, favicons, and anything referenced from CSS.
+- Remote images need their host listed under `images.remotePatterns` in `next.config.ts` or they will not render.
+- Image optimization runs on the server at request time, so it does not work under `output: 'export'` — another reason that setting is off on this track.
+
+See `/senternet-site-framework` for the full convention map.

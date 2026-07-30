@@ -91,3 +91,19 @@ If you only patched a subset of the icons, stage just those files. Confirm `git 
 - Favor one bold shape over detail
 - Reuse the brand accent color only if contrast stays strong
 - Do not use oversized transparent padding around the mark
+
+## Framework: Next.js track
+
+Generation is identical — same source image, same sizes, same Sharp pipeline. Placement and linking differ.
+
+Next uses file conventions in `app/` that emit the `<link>` tags automatically:
+
+| File | Replaces |
+|---|---|
+| `app/favicon.ico` | `public/favicon.ico` + `<link rel="shortcut icon">` |
+| `app/icon.png` (and/or `app/icon.svg`) | `public/favicon.png` / `favicon.svg` + `<link rel="icon">` |
+| `app/apple-icon.png` (180×180) | `public/apple-touch-icon.png` + `<link rel="apple-touch-icon">` |
+
+Do not also hand-write the `<link>` tags in `app/layout.tsx` — they would duplicate the generated ones. A PWA `manifest.webmanifest` still goes in `public/` and is referenced from the layout's `metadata.manifest`.
+
+See `/senternet-site-framework` for the full convention map.

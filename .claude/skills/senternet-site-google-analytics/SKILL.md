@@ -186,3 +186,47 @@ After deploying to production:
 - Filter by `googletagmanager.com`
 - Confirm the script loads after the page `load` event fires, not during initial HTML parse
 - Check GA4 Realtime report to confirm hits are arriving
+
+## Framework: Next.js track
+
+The Firebase Console linking and Measurement ID retrieval steps above are unchanged. The wiring is different: there is no `index.html`, no `htmlPlugin`, no `GA_START`/`GA_END` markers, and no prerender strip step.
+
+**1. Env var** — `NEXT_PUBLIC_GA_ID` instead of `VITE_GA_ID`, read via `process.env`. It must also be listed in `apphosting.yaml` with `BUILD` availability, or it is `undefined` in the deployed client bundle even though `.env.production` has it:
+
+```yaml
+env:
+  - variable: NEXT_PUBLIC_GA_ID
+    value: G-XXXXXXXXXX
+    availability: [BUILD, RUNTIME]
+```
+
+Leave it empty in `.env.development` so dev never reports.
+
+**2. Load it with `next/script`** in `app/layout.tsx`. The gating is a plain conditional — an empty ID renders nothing at all, which is the equivalent of the Vite plugin stripping the block:
+
+```tsx
+import Script from 'next/script';
+
+const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
+// inside the layout's returned JSX, before </body>
+{gaId && (
+  <>
+    <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="lazyOnload" />
+    <Script id="ga-init" strategy="lazyOnload">
+      {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+        gtag('js',new Date());gtag('config','${gaId}');`}
+    </Script>
+  </>
+)}
+```
+
+`strategy="lazyOnload"` is the equivalent of the Vite track's `window.addEventListener('load', ...)` deferral — it keeps GA off the critical path so it never costs FCP or LCP. Do not use `beforeInteractive`.
+
+**3. Pageviews on client-side navigation.** The Vite track gets one `config` call per full page load. Here the App Router navigates without a reload, so add a small `'use client'` component that fires `gtag('event', 'page_view', ...)` on `usePathname()` changes, or GA will record only the entry page of each session.
+
+**4. No prerender strip.** Step 6 above (removing the gtag `<script>` from prerendered HTML) does not apply — `next/script` loads it once.
+
+The `trackEvent` helper is unchanged; put it in `lib/analytics.ts` and mark any component that calls it `'use client'`.
+
+See `/senternet-site-framework` for the full convention map.

@@ -302,3 +302,26 @@ Add `/` to ROUTES if not already there. Prerendering a single-page portfolio doe
 - **`.rv` elements don't animate**: the `IntersectionObserver` hook must run after the DOM is painted — putting `useScrollReveal()` in a component that renders conditionally can miss early elements. Put it in the top-level `HomePage` or a layout that always mounts.
 - **Smooth scroll in React Router**: `<a href="#id">` without `onClick` will let the browser handle it, which works but adds `#id` to history. Use the `scrollTo` helper above to keep history clean.
 - **TypeScript errors on HTML entities**: replace `&rsquo;` etc. with the actual Unicode character in JSX strings.
+
+## Framework: Next.js track
+
+The extraction work is identical — same design tokens, same component decomposition, same primary-color detection. Only where the output lands changes.
+
+| Vite | Next.js |
+|---|---|
+| `src/styles/design-system.css` | `app/globals.css` (tokens alongside the Tailwind import) |
+| `src/pages/Home.tsx` + a `<Route>` in `src/App.tsx` | `app/page.tsx` |
+| `src/pages/About.tsx` + a `<Route>` | `app/about/page.tsx` |
+| `src/components/` | `components/` |
+| `src/components/Layout.tsx` wrapping routes | `app/layout.tsx` |
+| `<a href>`/`<Link>` from react-router-dom | `<Link>` from `next/link` |
+| `<img>` / `<picture>` | `next/image` |
+
+Rules specific to this track:
+
+- **Converted pages stay server components.** Add `'use client'` only to the leaf that needs state, an effect, or an event handler — a nav toggle, a carousel, a form. A design export usually converts to almost entirely static markup, so most components need no directive at all.
+- **No `ScrollToTop` component.** The App Router resets scroll on navigation itself. Adding one is harmless but noise; adding `react-router-dom` to get it is not.
+- **Fonts** go through `next/font` rather than a `<link>` to a font CDN — it self-hosts them and removes the render-blocking request. A design export that references Google Fonts by URL should be converted, not copied.
+- **Interactive markup that breaks on the server** (anything touching `window`, `document`, or `localStorage` during render) must move inside a `'use client'` component and behind an effect. On the Vite track this fails only under prerender; here it fails the build.
+
+See `/senternet-site-framework` for the full convention map.

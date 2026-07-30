@@ -169,3 +169,17 @@ for (const locale of LOCALES) {
 - Each page component must call `<MetaTags>` so the correct title/description/OG tags appear in the prerendered snapshot
 - If a route renders empty (`✗ EMPTY`), the `MetaTags` component is not dispatching `app-ready` — check that `document.dispatchEvent(new Event('app-ready'))` is called in the component's `useEffect`
 - `window.__PRERENDERING__ = true` can be used to conditionally skip animations, API calls, or interactivity that breaks in headless Chrome
+
+## Framework: Next.js track
+
+**This skill does not apply to the `nextjs` track — skip it entirely.**
+
+Next.js renders every route it can to static HTML during `next build`. Running Puppeteer over that output would add build time and produce a second, divergent copy of every page that drifts from the one the framework serves. Never install Puppeteer, create `scripts/prerender.mjs`, add `hydrateRoot`, or dispatch `app-ready` in a Next.js repo. Finding any of those there means a Vite-track step was applied to the wrong track; flag it rather than extending it.
+
+Check the equivalent guarantee instead:
+
+1. `npm run build` — read the printed route table. Marketing routes must be static (`○`) or ISR, not dynamic (`ƒ`). A page that went dynamic by accident (a `cookies()`/`headers()`/`searchParams` read, or `'use client'` too high in the tree) is rendering per request and paying a cold start for content that never changes.
+2. `npm start`, then `curl -s localhost:$PORT/<route>` for each route. The response must contain the page's real headline and its meta tags — this is exactly what a crawler that runs no JavaScript sees. An empty or shell-only response here is the same failure the Vite track reports as `✗ EMPTY`.
+3. Third-party scripts do not need stripping. On the Vite track the prerender step removes GA/Reddit/Clarity tags so they don't double-load; on this track they are rendered by `next/script`, which handles loading once.
+
+See `/senternet-site-framework` for the full convention map.
