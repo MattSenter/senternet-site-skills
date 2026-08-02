@@ -142,6 +142,7 @@ Claude will ask which framework track to use (see below), then for your app name
 | `/senternet-site-indexnow` | IndexNow submission to Bing on every deploy |
 | `/senternet-site-analytics` | Help pick one or more analytics providers (GA4, PostHog, Ahrefs Web Analytics — any combination), then hand off to each matching setup skill |
 | `/senternet-site-google-analytics` | GA4 with lazy loading and build-time env gating — guides Firebase Console linking and retrieves or confirms the Measurement ID |
+| `/senternet-site-gdpr` | EU/GB-only cookie consent toaster that geo-detects visitors and gates Google Analytics until Allow all |
 | `/senternet-site-posthog` | PostHog Cloud product analytics — events, funnels, replay — with browser-only lazy loading, production gating, and non-PII events |
 | `/senternet-site-ahrefs-web-analytics` | Ahrefs Web Analytics — free, privacy-friendly, cookieless traffic analytics with lazy loading and build-time env gating; no Firebase/Google linking, an alternative or addition to GA4 |
 | `/senternet-site-email-resend` | Transactional email with Resend + Firebase Functions — stores API key in Secret Manager and scaffolds Cloud Functions |

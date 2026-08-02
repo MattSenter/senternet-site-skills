@@ -288,6 +288,15 @@ Execution rule (GA4 path):
 - Once the web app is created and the config is captured, either accept an existing Measurement ID or continue with the existing Measurement ID retrieval / env wiring step.
 - Do not stop at the front-end GA markers alone. The step is not complete until the Firebase project has a web app, the Hosting association is in place, and `.env.production` has the Measurement ID.
 
+### Step 9b: GDPR cookie consent for GA *(recommended when GA4 is enabled)*
+
+**Detection:**
+- A cookie consent module / banner exists (e.g. `cookie-consent`, `CookieConsentBanner`, `lib/cookie-consent.ts`) that gates gtag until accept → skip
+- Geo endpoint exists (`/api/geo` or equivalent) returning `consentRequired` → skip wiring; verify EU/GB set and GA inject path
+- GA still loads from a static `index.html` block or unconditional `next/script` with no consent check → run the skill to gate it
+
+When GA4 is present (or just wired in Step 9), execute `/senternet-site-gdpr` unless the user explicitly declines (e.g. Ahrefs-only / cookieless analytics, or EEA traffic is out of scope). Skip when the only analytics is cookieless.
+
 ### Step 10: Transactional Email via Resend *(optional — for forms, notifications, or onboarding)*
 
 **Detection:**
