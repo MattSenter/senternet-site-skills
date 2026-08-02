@@ -297,6 +297,15 @@ Execution rule (GA4 path):
 
 When GA4 is present (or just wired in Step 9), execute `/senternet-site-gdpr` unless the user explicitly declines (e.g. Ahrefs-only / cookieless analytics, or EEA traffic is out of scope). Skip when the only analytics is cookieless.
 
+### Step 9c: CCPA opt-out for California *(recommended when GA4 is enabled)*
+
+**Detection:**
+- Consent module already understands a `ccpa` regime (or California region) and disables gtag on reject → skip
+- Geo endpoint returns state/region and a `regime` of `gdpr` | `ccpa` | `none` → verify CCPA path; patch if only GDPR exists
+- GA loads with no way for a California visitor to stop it → run the skill
+
+When GA4 is present, execute `/senternet-site-ccpa` unless the user explicitly declines (no CA traffic, or cookieless analytics only). Prefer one shared consent module with `/senternet-site-gdpr` rather than two banners. CCPA is opt-out (GA may run until Reject); do not reuse GDPR's "block until Allow all" rule for California.
+
 ### Step 10: Transactional Email via Resend *(optional — for forms, notifications, or onboarding)*
 
 **Detection:**

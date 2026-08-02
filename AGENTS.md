@@ -86,4 +86,4 @@ Firebase Hosting serves static headers (no per-request nonces). Use SHA-256 hash
 
 ## Skill execution order (from `senternet-create-site`)
 
-Framework choice → Prerequisites → Phase 1 (framework scaffold, Design, Firebase) → Phase 2 SEO (metatags, robots, sitemap, IndexNow) → Phase 3 Analytics (GA4, GDPR consent gate when GA is on, Reddit pixel) → Phase 4 Build pipeline (prerender — `vite` track only) → Phase 5 Images (WebP, share images) → Phase 6 Performance (Lighthouse, mobile) → Phase 7 Optional (i18n, ad landing pages, blog, compare pages)
+Framework choice → Prerequisites → Phase 1 (framework scaffold, Design, Firebase) → Phase 2 SEO (metatags, robots, sitemap, IndexNow) → Phase 3 Analytics (GA4, GDPR opt-in and CCPA opt-out when GA is on, Reddit pixel) → Phase 4 Build pipeline (prerender — `vite` track only) → Phase 5 Images (WebP, share images) → Phase 6 Performance (Lighthouse, mobile) → Phase 7 Optional (i18n, ad landing pages, blog, compare pages)
