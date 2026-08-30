@@ -1,11 +1,13 @@
 ---
 name: senternet-site-multilingual
-description: Add URL-based multilingual support with prerendering and hreflang.
+description: Add fully localized, URL-based multilingual support with prerendering, locale-correct structured data, hreflang, and SEO release gates.
 ---
 
 # Multilingual / i18n Support
 
 Add multi-language support with URL-based routing (`/es/`, `/fr/`), hreflang tags, localized prerendering, and Firebase Hosting i18n.
+
+An indexable locale is a complete content release, not translated navigation wrapped around default-language content. Do not publish a locale prefix, prerender it, or add it to hreflang/sitemaps until every indexable route passes the translation and metadata gates below.
 
 ## Step 0: Gather language requirements
 
@@ -39,6 +41,8 @@ This implementation uses:
 - **A single `i18n.ts` file** with all copy for all locales (not separate JSON files)
 - **`window.__LANG__`** flag so the prerender script can force a specific locale during static generation
 - **hreflang `<link>` tags** in the prerendered HTML so Google serves the right language
+- **One locale-aware URL helper** shared by canonicals, hreflang, internal links, sitemap entries, and structured data
+- **A publication gate** that keeps incomplete locale scaffolding out of indexable output
 
 ---
 
@@ -92,8 +96,8 @@ const copy: Record<Language, LocaleCopy> = {
       },
     },
   },
-  // Repeat for every additional locale. Use placeholder translated strings;
-  // the user can replace them with real translations later.
+  // Repeat for every additional locale with complete, reviewed translations.
+  // Never publish placeholder or default-language fallback strings at locale URLs.
   '<code2>': {
     languageLabel: '…',          // "Language" in this language
     languageNames: { en: 'English', '<code2>': '…' },
@@ -209,6 +213,28 @@ function HomePage() {
 }
 ```
 
+Apply the same rule to every indexable route and every content source, not only top-level UI components:
+
+- article titles, summaries, dates, headings, body paragraphs, lists, captions, and image alt text
+- project detail metadata, introductions, sections, pricing labels, CTAs, and related links
+- About, legal, tool, comparison, landing, tag, and pagination pages
+- strings stored in route registries, post/project data modules, component constants, and schema builders
+
+Do not leave `POST_TITLE`, `POST_DESCRIPTION`, project data, or article bodies hardcoded in the default language while only translating the surrounding template. If a route has long-form content, model that content in the locale layer or a locale-specific content module and render it from the active locale.
+
+### 3a. Gate incomplete locales before creating URLs
+
+Maintain an explicit coverage matrix of route IDs × locales. A locale is publishable only when every indexable route has complete visible copy, metadata, image text, and schema labels.
+
+If translations are incomplete:
+
+- keep the locale disabled in the published locale list
+- do not register its routes, prerender them, add hreflang alternates, or emit sitemap URLs
+- do not publish fallback English bodies under locale-prefixed URLs
+- do not use cross-locale canonicals or `noindex` as a substitute for finishing the translation
+
+It is fine to scaffold an unpublished locale behind a separate development-only list, but the production `PUBLISHED_LOCALES` list must contain only complete locales.
+
 ### 4. Add hreflang links in MetaTags (or `usePageHead`)
 
 Generate one `<link rel="alternate">` per locale plus `x-default`. Build the list dynamically from the confirmed locale codes.
@@ -236,6 +262,26 @@ ALL_LOCALES.forEach((code) => {
   setAlternate(code, href);
 });
 setAlternate('x-default', `${origin}${englishPath}`);
+```
+
+Use this same localized canonical URL in structured data. Every localized page's page-specific `@id`, `url`, `mainEntityOfPage`, and breadcrumb `item` must reference the localized canonical, not the English URL. Global entities such as the author `Person` or publisher `Organization` may keep one stable site-wide `@id`.
+
+```tsx
+const canonicalPath = localizePath(basePath, language);
+const canonicalUrl = `${origin}${canonicalPath}`;
+
+const schema = {
+  '@type': 'BlogPosting',
+  headline: t.title,
+  description: t.description,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+};
+
+const breadcrumbs = [
+  { '@type': 'ListItem', position: 1, name: t.home, item: `${origin}${localizePath('/', language)}` },
+  { '@type': 'ListItem', position: 2, name: t.blog, item: `${origin}${localizePath('/blog', language)}` },
+  { '@type': 'ListItem', position: 3, name: t.title, item: canonicalUrl },
+];
 ```
 
 ### 5. Update the prerender script for locales
@@ -285,7 +331,6 @@ See the `senternet-site-sitemap` skill — the `LOCALES` array drives `<xhtml:li
 Build the switcher from the locale list — do not hardcode a binary EN↔ES toggle.
 
 ```tsx
-import { useNavigate } from 'react-router-dom';
 import { useLanguage, type Language } from '../i18n';
 
 const LOCALE_LABELS: Record<Language, string> = {
@@ -298,7 +343,6 @@ const NON_DEFAULT_LOCALES: Language[] = ['<code2>', '<code3>'];
 
 function LanguageSwitcher() {
   const { language, setLanguage } = useLanguage();
-  const navigate = useNavigate();
 
   const switchTo = (lang: Language) => {
     localStorage.setItem('lang', lang);
@@ -310,7 +354,9 @@ function LanguageSwitcher() {
       current
     );
     const newPath = lang === 'en' ? basePath : `/${lang}${basePath === '/' ? '' : basePath}`;
-    navigate(newPath);
+    // Locale pages are distinct prerendered documents. Force a document navigation so
+    // the browser loads and hydrates the target locale's HTML and metadata.
+    window.location.assign(newPath);
   };
 
   return (
@@ -336,15 +382,35 @@ useEffect(() => {
 }, [language]);
 ```
 
+### 9. Add multilingual SEO regression tests
+
+Add tests that inspect the production prerender output, not only React source. For every published route × locale, assert:
+
+- the output file exists and contains meaningful rendered content
+- `<html lang>` and `dir` match the locale (`zh-Hans` is preferred for Simplified Chinese)
+- the canonical is the page's own locale URL
+- the page has exactly one H1 plus non-empty localized title and description
+- the hreflang set contains every published locale, itself, and `x-default`, with identical reciprocal targets
+- every hreflang target exists in the build and is indexable
+- JSON-LD parses and page-specific `@id`, `url`, `mainEntityOfPage`, and breadcrumbs use the localized canonical
+- the localized main-content text is not byte-for-byte or normalized-text identical to the English version
+- route/content coverage has no fallback default-language values for published locales
+- title-length checks flag likely truncation for human review rather than silently accepting oversized translated titles
+
+Make the tests enumerate route/content registries so adding a new post, project, or locale automatically expands coverage. A test that checks only one sample route is insufficient.
+
+After the build, crawl the full generated sitemap and fail the task if any URL redirects, 404s, cross-canonicalizes, omits a return hreflang, has invalid JSON-LD, or contains untranslated main content.
+
 ---
 
 ## Notes
 
-- All copy must live in `i18n.ts` — never hardcode strings in components
-- Every locale needs a full entry in `copy` — TypeScript will error if any key is missing
+- All visitor-facing copy must come from a locale-aware source — never hardcode default-language page content in components
+- Every published locale needs a complete entry for every indexable route; TypeScript shape checks are necessary but do not prove that fallback English values are absent
+- Placeholder translations are development scaffolding only and must never enter `PUBLISHED_LOCALES`
 - The prerender script must clear each locale's output directory before re-rendering to avoid stale pages
 - Firebase Hosting's `"i18n": { "root": "/" }` config is optional — URL prefix routing handles i18n at the app level
-- After adding translations: run the prerender script, verify each locale's `index.html` contains the correct language, then check hreflang tags in `<head>`
+- After adding translations: run the full production build and the multilingual SEO regression suite, then inspect representative deep pages in each locale
 
 ### Language detection priority
 
@@ -366,6 +432,8 @@ The URL structure and hreflang policy are unchanged (`/es/...` prefixes, `x-defa
 - Use a library built for the App Router (e.g. `next-intl`) for message loading and locale detection, rather than the `LanguageProvider` pattern. Do not add `i18next` wired through a client context — it forces the whole tree client-side.
 - Locale detection and redirects go in `middleware.ts`.
 - `hreflang` comes from `alternates.languages` in each page's `metadata`, and must match the alternates emitted by `app/sitemap.ts`. Set both from the same locale list.
+- Localize page-specific JSON-LD URLs and breadcrumb items from the same canonical URL helper used by `metadata.alternates`.
+- Generate static params and sitemap entries only from `PUBLISHED_LOCALES`; incomplete locale message files must not create public routes.
 - Extend `config/routes.mjs` with the locale prefixes so the sitemap and IndexNow cover every localized URL.
 - There is no `/es/` loop to add to a prerender script, because there is no prerender script.
 

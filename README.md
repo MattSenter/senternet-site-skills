@@ -157,7 +157,7 @@ Claude will ask which framework track to use (see below), then for your app name
 | `/senternet-site-mobile-optimize` | Mobile image optimization, lazy loading, animation disabling |
 | `/senternet-site-mobile-forms` | Mobile keyboard, autocomplete, and autocorrect attributes for all form inputs |
 | `/senternet-site-mobile-nav` | Hamburger-style mobile nav with nested section anchors and body scroll lock |
-| `/senternet-site-multilingual` | i18n system with URL prefix routing and hreflang tags |
+| `/senternet-site-multilingual` | Complete-content i18n with URL routing, locale-aware schema, hreflang, and SEO release gates |
 | `/senternet-site-ads-landing` | Conversion-optimized ad landing pages |
 | `/senternet-site-seo-blog` | SEO blog with prerendered posts, share images, and tag index pages |
 | `/senternet-site-compare-pages` | Competitor alternative and vs. pages for SEO |
