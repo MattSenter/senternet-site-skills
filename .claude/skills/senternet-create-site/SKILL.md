@@ -1,6 +1,6 @@
 ---
 name: senternet-create-site
-description: Orchestrate the full Senternet site build by running foundation, favicon, SEO, analytics, prerender, image, and performance skills in order.
+description: Orchestrate the full Senternet site build by running foundation, favicon, SEO, analytics, CSP, prerender, image, and performance skills in order.
 ---
 
 # Create a Complete Optimized Marketing Site
@@ -462,7 +462,21 @@ In upfit mode, include reCAPTCHA Enterprise in the optional-feature menu if it i
 
 ---
 
-## Step 23: Verify everything works
+## Step 23: Content Security Policy
+
+Run this after every third-party integration is wired (analytics, GDPR/CCPA consent, Resend, Stripe, Reddit pixel, reCAPTCHA) and before the verification build, so the policy is generated against the services the site actually loads. This step is not optional: every Senternet site ships a CSP.
+
+**Detection:**
+- `firebase.json` already sets a `Content-Security-Policy` header → audit it against the services wired in this run, extend it for anything missing, and skip the rest
+- **Next.js:** `middleware.ts` already generates a per-request nonce and sets the CSP header → audit and extend only
+
+Execute `/senternet-site-csp`. It audits which third-party origins are in use, moves inline scripts out of `index.html` (Vite) or wires the nonce through `<Script>` tags (Next.js), writes the header, and verifies it live.
+
+Every service added after this point must have its origins added to the policy in the same change that adds the service. A new script that is not in the CSP silently fails in production.
+
+---
+
+## Step 24: Verify everything works
 
 **Vite track:**
 
@@ -471,8 +485,9 @@ In upfit mode, include reCAPTCHA Enterprise in the optional-feature menu if it i
 3. *(Optional — only if dev environment exists)* `npm run deploy:dev` — deploys to staging Firebase project
 4. *(Optional)* Verify staging URL loads and meta tags are correct
 5. Fix any Lighthouse failures found on the local production build before first production deploy
-6. `npm run deploy:prod` — deploys to production + runs IndexNow
-7. *(Optional, upfit only)* If an existing deployed site and production URL are already detectable, run PageSpeed Insights against production after deploy to capture live CDN behavior
+6. Load the local production build and confirm the console is free of CSP violations
+7. `npm run deploy:prod` — deploys to production + runs IndexNow
+8. *(Optional, upfit only)* If an existing deployed site and production URL are already detectable, run PageSpeed Insights against production after deploy to capture live CDN behavior
 
 **Next.js track:**
 
@@ -483,11 +498,12 @@ In upfit mode, include reCAPTCHA Enterprise in the optional-feature menu if it i
 5. Confirm `/sitemap.xml` lists only indexable routes and `/robots.txt` points at the canonical host
 6. Fix any Lighthouse failures against the local production server before the first production rollout
 7. Deploy by pushing to the connected branch, or `npm run deploy:prod` to force a rollout; watch it reach `READY` before running IndexNow
-8. Verify the deployed backend serves the same HTML the local production server did — a variable missing from `apphosting.yaml` shows up here as an empty analytics ID or a wrong canonical host, and nowhere earlier
+8. Confirm the `Content-Security-Policy` header comes back on a deployed response and the console is free of CSP violations
+9. Verify the deployed backend serves the same HTML the local production server did — a variable missing from `apphosting.yaml` shows up here as an empty analytics ID or a wrong canonical host, and nowhere earlier
 
 ---
 
-## Step 24: Initialize Project Documentation
+## Step 25: Initialize Project Documentation
 
 **Detection:**
 - `AGENTS.md` exists → skip generation (do not overwrite existing project docs)
