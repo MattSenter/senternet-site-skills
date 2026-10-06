@@ -415,6 +415,8 @@ Execute `/senternet-site-mobile-nav` for any missing pieces.
 
 ## Phase 7: Optional Features
 
+For desktop-only app sites, execute `/senternet-site-download-handoff` to give mobile visitors email, share, copy, and download-anyway options. Reuse an existing suitable download/install destination and transactional email infrastructure.
+
 ### Step 18: Multilingual (if requested)
 
 **Detection:**
