@@ -157,6 +157,7 @@ Claude will ask which framework track to use (see below), then for your app name
 | `/senternet-site-mobile-optimize` | Mobile image optimization, lazy loading, animation disabling |
 | `/senternet-site-mobile-forms` | Mobile keyboard, autocomplete, and autocorrect attributes for all form inputs |
 | `/senternet-site-download-handoff` | Desktop-app download handoff for mobile: email, share, copy, and download anyway |
+| `/senternet-app-voiceover` | Live VoiceOver test of a macOS app, driven from the shell and recording what VoiceOver actually speaks, then fixes, localized strings, a live retest, and full machine cleanup |
 | `/senternet-site-mobile-nav` | Hamburger-style mobile nav with nested section anchors and body scroll lock |
 | `/senternet-site-multilingual` | Complete-content i18n with URL routing, locale-aware schema, hreflang, and SEO release gates |
 | `/senternet-site-ads-landing` | Conversion-optimized ad landing pages |
